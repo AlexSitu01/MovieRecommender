@@ -15,8 +15,8 @@ export const TMBD_CONFIG = {
     }
 }
 
-export const fetchPopularMovies = async({ query }: {query: string}) => {
-    const endpoint = query ? `${TMBD_CONFIG.BASE_URL}search/mvoie?query=${encodeURIComponent(query)}` 
+export const fetchMovies = async({ query }: {query: string}) => {
+    const endpoint = query ? `${TMBD_CONFIG.BASE_URL}search/movie?query=${encodeURIComponent(query)}` 
                             :`${TMBD_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc`;
     
     const response = await fetch( endpoint, {
@@ -29,6 +29,6 @@ export const fetchPopularMovies = async({ query }: {query: string}) => {
 
     const data = await response.json();
 
-    return data.resutls;
+    return data.results;
 
 }
