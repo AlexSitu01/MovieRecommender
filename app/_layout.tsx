@@ -7,7 +7,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 export default function RootLayout() {
   return (
     <SafeAreaView className="flex-1 bg-[#020212]">
-      <StatusBar hidden={true} />
+      <StatusBar hidden={false} />
       <Stack>
         <Stack.Screen
           name="(tabs)"
@@ -17,10 +17,8 @@ export default function RootLayout() {
           name="movies/[id]"
           options={{ headerShown: false }}
         />
-      </Stack>;
+      </Stack>
     </SafeAreaView>
-
-
   )
 
 

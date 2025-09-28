@@ -48,3 +48,15 @@ export const fetchMovieDetails = async (movieId: string): Promise<MovieDetails> 
             throw err;
         }
     }
+
+export const fetchTrendingMovies = async() => {
+    const response = await fetch(`${TMBD_CONFIG.BASE_URL}/trending/movie/week`, {
+        method : 'GET',
+        headers: TMBD_CONFIG.headers
+    })
+    if (!response){
+        throw new Error('Failed to fetch Trending Movies')
+    }
+    const data = await response.json()
+    return data.results
+}

@@ -1,10 +1,10 @@
 import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import { ActivityIndicator, FlatList, Image, ScrollView, Text, View } from "react-native";
+import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
 import { useRouter } from "expo-router";
 import useFetch from "@/services/useFetch";
-import { fetchMovies } from "@/services/api";
+import { fetchMovies, fetchTrendingMovies } from "@/services/api";
 import MovieCard from "@/components/MovieCard";
 import { useEffect, useState } from "react";
 import { supabase } from "@/services/supabase";
@@ -16,6 +16,9 @@ export default function Index() {
   const [session, setSession] = useState<Session | null>(null)
 
   const { data: movies, loading: moviesLoading, error: moviesError } = useFetch(() => fetchMovies({ query: "" }));
+  const { data: trendingMovies, loading: trendingLoading, error: trendingError } = useFetch(() => fetchTrendingMovies())
+  const { width } = Dimensions.get("window");
+  const CARD_WIDTH = width * 0.6;
 
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
@@ -31,16 +34,42 @@ export default function Index() {
     <View className="flex-1">
       {session && session.user ? <View className="flex-1 bg-[#020212]">
         <Image source={images.bg} className="absolute w-full z-0" />
+
         <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
           <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto"></Image>
 
 
-          {moviesLoading ? (<ActivityIndicator size='large' color='#0000ff' className="mt-10 self-center" />) : moviesError ? (<Text>Error:{moviesError?.message}</Text>) : (
+          {moviesLoading || trendingLoading ? (<ActivityIndicator size='large' color='#0000ff' className="mt-10 self-center" />) : moviesError || trendingError ? (<Text>Error:{moviesError?.message}</Text>) : (
             <View className="flex-1 mt-5 w-full">
               <SearchBar
                 onPress={() => router.push("/search")}
                 placeholder="Search for a movie"
+
               />
+
+              {trendingMovies &&
+                (<View>
+                  <Text className="text-lg text-white font-bold mt-5 mb-3">Trending Movies</Text>
+
+                  <FlatList
+                    data={trendingMovies}
+                    renderItem={({ item }) => (
+                      <MovieCard {...item} cardWidth={CARD_WIDTH} />
+                    )}
+                    keyExtractor={(item) => item.id.toString()}
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    snapToInterval={CARD_WIDTH + 16} // card width + separator spacing
+                    decelerationRate="fast"
+                    contentContainerStyle={{
+                      paddingHorizontal: 16,
+                    }}
+                    ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
+                    className="mb-4 mt-3"
+                  />
+                </View>
+                )}
+
               <Text className="text-lg text-white font-bold mt-5 mb-3">Latest Movies</Text>
               <FlatList
                 data={movies}

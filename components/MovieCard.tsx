@@ -3,10 +3,10 @@ import React from 'react'
 import { Link } from 'expo-router'
 import { icons } from '@/constants/icons'
 
-const MovieCard = ({ id, poster_path, title, vote_average, release_date }: Movie) => {
+const MovieCard = ({ id, poster_path, title, vote_average, release_date, cardWidth }: Movie & {cardWidth?: number}) => {
     return (
-        <Link href={`/movies/${id}`} asChild className=''>
-            <TouchableOpacity className='w-[28%] mx-1'>
+        <Link href={`/movies/${id}`} asChild>
+            <TouchableOpacity className='w-[28%] mx-1' style={cardWidth ?{width:cardWidth}: undefined}>
                 <Image source={{
                     uri: poster_path ? `https://image.tmdb.org/t/p/w500${poster_path}` : 'https://placehold.co/600x400/1a1a1a/ffffff.png'
 
