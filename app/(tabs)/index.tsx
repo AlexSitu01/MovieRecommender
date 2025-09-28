@@ -3,11 +3,8 @@ import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchMovies, fetchTrendingMovies } from "@/services/api";
-import { supabase } from "@/services/supabase";
 import useFetch from "@/services/useFetch";
-import { Session } from "@supabase/supabase-js";
 import { useRouter } from "expo-router";
-import { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
 
 export default function Index() {

@@ -1,5 +1,6 @@
 import { createClient } from '@supabase/supabase-js'
 import AsyncStorage from '@react-native-async-storage/async-storage'
+import { Platform } from 'react-native';
 
 export const supaBaseConfig = {
     supabaseUrl: 'https://zfzkxbblphcqsicpmedw.supabase.co',
@@ -10,16 +11,20 @@ export const getSupabase = () => {
     if (!supaBaseConfig.supabaseKey) {
         throw new Error('Supabase key is missing');
     }
+    const storage =
+        Platform.OS === 'web'
+            ? (typeof window !== 'undefined' ? window.localStorage : undefined)
+            : AsyncStorage
 
     const supabase = createClient(
         supaBaseConfig.supabaseUrl,
         supaBaseConfig.supabaseKey,
         {
             auth: {
-                storage: AsyncStorage,
+                storage: storage,
                 autoRefreshToken: true,
                 persistSession: true,
-                detectSessionInUrl: false,
+                detectSessionInUrl: Platform.OS === 'web',
             },
         }
     );

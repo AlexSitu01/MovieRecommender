@@ -49,7 +49,7 @@ const MovieDetails = () => {
 
           <View className='flex flex-row justify-between w-1/2'>
             <MovieInfo lable='Budget' value={movie && movie.budget != null ? `$${movie.budget / 1_000_000} millions` : 'N/A'}/>
-            <MovieInfo lable='Revenue' value={`$${Math.round(movie?.revenue ?? 0) / 1_000_000} million`}/>
+            <MovieInfo lable='Revenue' value={`$${(Math.round(movie?.revenue ?? 0) / 1_000_000).toFixed(2)} million`}/>
           </View>
 
           <MovieInfo lable='Production Companies' value={movie?.production_companies.map((c)=>c.name).join(' - ') || 'N/A'}/>
