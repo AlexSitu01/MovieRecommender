@@ -1,38 +1,29 @@
+import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
-import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
-import { useRouter } from "expo-router";
-import useFetch from "@/services/useFetch";
 import { fetchMovies, fetchTrendingMovies } from "@/services/api";
-import MovieCard from "@/components/MovieCard";
-import { useEffect, useState } from "react";
 import { supabase } from "@/services/supabase";
+import useFetch from "@/services/useFetch";
 import { Session } from "@supabase/supabase-js";
-import Auth from "@/components/Auth";
+import { useRouter } from "expo-router";
+import { useEffect, useState } from "react";
+import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
 
 export default function Index() {
   const router = useRouter();
-  const [session, setSession] = useState<Session | null>(null)
+
 
   const { data: movies, loading: moviesLoading, error: moviesError } = useFetch(() => fetchMovies({ query: "" }));
   const { data: trendingMovies, loading: trendingLoading, error: trendingError } = useFetch(() => fetchTrendingMovies())
   const { width } = Dimensions.get("window");
   const CARD_WIDTH = width * 0.6;
 
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
 
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-  }, [])
 
   return (
     <View className="flex-1">
-      {session && session.user ? <View className="flex-1 bg-[#020212]">
+      <View className="flex-1 bg-[#020212]">
         <Image source={images.bg} className="absolute w-full z-0" />
 
         <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
@@ -92,7 +83,6 @@ export default function Index() {
           )}
         </ScrollView>
       </View>
-        : <Auth />}
     </View>
 
   );

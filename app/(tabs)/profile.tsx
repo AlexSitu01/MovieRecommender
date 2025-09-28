@@ -1,29 +1,19 @@
-import { StyleSheet, Text, View } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import Account from '@/components/Account'
-import { Session } from '@supabase/supabase-js'
-import { supabase } from '@/services/supabase'
-import Auth from '@/components/Auth'
+import { useSession } from '@/services/Auth';
+import { Text, View } from 'react-native';
 
 
-const Profile = () => {
-  const [session, setSession] = useState<Session | null>(null)
-  useEffect(() => {
-    supabase.auth.getSession().then(({ data: { session } }) => {
-      setSession(session)
-    })
-    supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session)
-    })
-  }, [])
 
+export default function Index() {
+  const { signOut } = useSession();
   return (
-    <View className='bg-[#020212] flex-1'>
-      {session && session.user ? <Account key={session.user.id} session={session} /> : <Auth />}
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <Text
+        onPress={() => {
+          // The `app/(app)/_layout.tsx` redirects to the sign-in screen.
+          signOut();
+        }}>
+        Sign Out
+      </Text>
     </View>
-  )
+  );
 }
-
-export default Profile
-
-const styles = StyleSheet.create({})
