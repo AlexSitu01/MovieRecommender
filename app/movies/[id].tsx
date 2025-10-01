@@ -23,7 +23,7 @@ const MovieDetails = () => {
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
   return (
     <View className='flex-1 bg-[#020212]'>
-      <ScrollView contentContainerStyle={{
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{
         paddingBottom: 80,
       }}>
         <View className='flex-1'>
