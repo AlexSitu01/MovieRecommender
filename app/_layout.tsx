@@ -5,6 +5,7 @@ import { View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { SessionProvider, useSession } from "@/services/Auth";
 import { SplashScreenController } from "@/services/splash";
+import React from "react";
 
 export default function RootLayout() {
   return (

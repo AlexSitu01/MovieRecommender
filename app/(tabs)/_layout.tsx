@@ -1,5 +1,4 @@
 import { View, Text, Image, ImageBackground } from 'react-native'
-import React from 'react'
 import { Tabs } from 'expo-router'
 import { images } from '@/constants/images'
 import { icons } from '@/constants/icons'
