@@ -7,11 +7,11 @@ export default function Index() {
   const { signOut } = useSession();
   return (
 
-    <View className='flex-1 justify-start p-6 bg-[#020212] gap-y-2'>
+    <View className='flex-1 justify-start p-6 bg-[#020212] gap-y-2 w-full h-full'>
       {/* Profile Pic and Username*/}
-      <View className='flex-row items-center justify-start gap-x-5'>
+      <View className='flex-row items-center justify-start gap-x-5 w-full'>
         <Image className='w-20 h-20 rounded-full' source={{ uri: 'https://animals.sandiegozoo.org/sites/default/files/inline-images/animals-lizard-redheadedagamapair.jpg' }} />
-        <Text className='text-white font-bold text-2xl'>Alex Situ</Text>
+        <Text className='text-white font-bold text-2xl w-full flex items-center justify-center'>Alex Situ</Text>
       </View>
 
       {/* Description */}

@@ -1,10 +1,11 @@
-import { View, Text, ScrollView, Touchable, TouchableOpacity } from 'react-native'
+import { View, Text, ScrollView, Touchable, TouchableOpacity, Pressable } from 'react-native'
 import React from 'react'
 import { Image } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import useFetch from '@/services/useFetch'
 import { fetchMovieDetails } from '@/services/api'
 import { icons } from '@/constants/icons'
+import { bookmarkMovie } from '@/services/supabase'
 
 interface MovieInfoProps {
   lable: string;
@@ -35,31 +36,38 @@ const MovieDetails = () => {
             <Text className='text-gray-400 text-sm'>{movie?.release_date?.split('-')[0]}</Text>
             <Text className='text-gray-400 text-sm'>{movie?.runtime}m</Text>
           </View>
-          <View className='flex-row items-center rounded-md gap-x-2 mt-2 p-2 bg-gray-800'>
-            <View className='flex-row items-center'>
+          <View className='flex-row items-center gap-x-2 bg-gray-800 mt-2 p-2 rounded-md'>
+            <View className='flex-row items-center '>
               <Image source={icons.star} className='size-4' />
               <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
             </View>
-            <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
+            <View className='flex-row items-center'>
+              <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
+            </View>
+            <View className='bg-[#020212]'>
+              <TouchableOpacity onPress={() => bookmarkMovie(id as string)} className='bg-blue-500 px-4 py-2 rounded'>
+                <Image source={{ uri: 'https://www.svgrepo.com/svg/19422/small-bookmark' }} className='size-5'/>
+              </TouchableOpacity>
+            </View>
           </View>
 
           <MovieInfo lable='Overview' value={movie?.overview} />
 
-          <MovieInfo lable='Generes' value={movie?.genres?.map((g)=> g.name).join(' - ') || 'N/A'}/>
+          <MovieInfo lable='Generes' value={movie?.genres?.map((g) => g.name).join(' - ') || 'N/A'} />
 
           <View className='flex flex-row justify-between w-1/2'>
-            <MovieInfo lable='Budget' value={movie && movie.budget != null ? `$${movie.budget / 1_000_000} millions` : 'N/A'}/>
-            <MovieInfo lable='Revenue' value={`$${(Math.round(movie?.revenue ?? 0) / 1_000_000).toFixed(2)} million`}/>
+            <MovieInfo lable='Budget' value={movie && movie.budget != null ? `$${movie.budget / 1_000_000} millions` : 'N/A'} />
+            <MovieInfo lable='Revenue' value={`$${(Math.round(movie?.revenue ?? 0) / 1_000_000).toFixed(2)} million`} />
           </View>
 
-          <MovieInfo lable='Production Companies' value={movie?.production_companies.map((c)=>c.name).join(' - ') || 'N/A'}/>
+          <MovieInfo lable='Production Companies' value={movie?.production_companies.map((c) => c.name).join(' - ') || 'N/A'} />
         </View>
 
       </ScrollView>
 
       <TouchableOpacity onPress={router.back} className='absolute bottom-5 left-0 right-0 mx-5 bg-purple-400 py-3.5 flex flex-row items-center z-50 justify-center rounded-lg'>
-          <Image source={icons.arrow} className='size-5 mr-1 mt-0.5 rotate-180' tintColor='#fff'></Image>
-          <Text className='text-white font-semibold text-base'>Go Back</Text>
+        <Image source={icons.arrow} className='size-5 mr-1 mt-0.5 rotate-180' tintColor='#fff'></Image>
+        <Text className='text-white font-semibold text-base'>Go Back</Text>
       </TouchableOpacity>
     </View>
   )
