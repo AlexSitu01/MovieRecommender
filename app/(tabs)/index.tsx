@@ -5,10 +5,12 @@ import { images } from "@/constants/images";
 import { fetchMovies, fetchTrendingMovies } from "@/services/api";
 import useFetch from "@/services/useFetch";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
 
+
 export default function Index() {
+
   const router = useRouter();
 
 

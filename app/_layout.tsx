@@ -6,12 +6,15 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { SessionProvider, useSession } from "@/services/Auth";
 import { SplashScreenController } from "@/services/splash";
 import React from "react";
+import { WatchHistoryContext, WatchHistoryProvider } from "@/services/useWatchHistory";
 
 export default function RootLayout() {
   return (
     <SessionProvider>
-      <SplashScreenController />
-      <RootNavigator />
+      <WatchHistoryProvider>
+        <SplashScreenController />
+        <RootNavigator />
+      </WatchHistoryProvider>
     </SessionProvider>
   )
 }
@@ -34,10 +37,10 @@ function RootNavigator() {
             options={{ headerShown: false }}
           />
         </Stack.Protected>
-        <Stack.Protected guard ={!session}>
+        <Stack.Protected guard={!session}>
           <Stack.Screen
             name="sign-in"
-            options={{headerShown: false}}
+            options={{ headerShown: false }}
           />
         </Stack.Protected>
       </Stack>

@@ -1,7 +1,6 @@
 import { View, Text, AppState, StyleSheet } from 'react-native'
 import React, { Children, createContext, PropsWithChildren, use } from 'react'
 import { supabase } from '@/services/supabase'
-import { Button, Input } from '@rneui/themed'
 import { useStorageState } from '@/services/useStorageState'
 
 
@@ -34,6 +33,7 @@ export function useSession() {
 }
 
 export function SessionProvider({ children }: PropsWithChildren) {
+    
     const [[isLoading, session], setSession] = useStorageState('session');
 
     const sessionObj = session ? JSON.parse(session) : null;

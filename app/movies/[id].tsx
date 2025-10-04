@@ -6,6 +6,9 @@ import useFetch from '@/services/useFetch'
 import { fetchMovieDetails } from '@/services/api'
 import { icons } from '@/constants/icons'
 import { bookmarkMovie } from '@/services/supabase'
+import { useWatchHistory } from '@/services/useWatchHistory'
+
+
 
 interface MovieInfoProps {
   lable: string;
@@ -22,6 +25,19 @@ const MovieInfo = ({ lable, value }: MovieInfoProps) => (
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
+  const { hasWatched, addMovie, removeMovie } = useWatchHistory()
+
+  const toggleBookmark = () => {
+    if (movie) {
+      const movie_id = movie.id.toString();
+      if (hasWatched(movie?.id.toString())) {
+        removeMovie(movie_id)
+      }
+      else addMovie(movie_id)
+    }
+
+  }
+
   return (
     <View className='flex-1 bg-[#020212]'>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{
@@ -36,17 +52,22 @@ const MovieDetails = () => {
             <Text className='text-gray-400 text-sm'>{movie?.release_date?.split('-')[0]}</Text>
             <Text className='text-gray-400 text-sm'>{movie?.runtime}m</Text>
           </View>
-          <View className='flex-row items-center gap-x-2 bg-gray-800 mt-2 p-2 rounded-md'>
-            <View className='flex-row items-center '>
-              <Image source={icons.star} className='size-4' />
-              <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
+          <View className='flex flex-row items-center justify-between w-full'>
+            <View className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2'>
+              <View className='flex-row items-center '>
+                <Image source={icons.star} className='size-4' />
+                <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
+              </View>
+              <View className='flex-row items-center'>
+                <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
+              </View>
             </View>
-            <View className='flex-row items-center'>
-              <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
-            </View>
-            <View className='bg-[#020212]'>
-              <TouchableOpacity onPress={() => bookmarkMovie(id as string)} className='bg-blue-500 px-4 py-2 rounded'>
-                <Image source={{ uri: 'https://www.svgrepo.com/svg/19422/small-bookmark' }} className='size-5'/>
+            <View className=''>
+              <TouchableOpacity onPress={() => {bookmarkMovie(id as string) 
+                toggleBookmark()}
+              } className='bg-blue-500 px-4 py-2 rounded-md'>
+                {hasWatched(movie?.id.toString() ?? "") ? <Image source={icons.checkmark} className='size-6'/> : <Image source={icons.save} className='size-6'/>}
+                
               </TouchableOpacity>
             </View>
           </View>

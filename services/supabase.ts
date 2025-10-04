@@ -31,7 +31,7 @@ export const getSupabase = () => {
     return supabase;
 }
 
-async function getCurrentUser() {
+export async function getCurrentUser() {
     try {
         const { data: { user }, error } = await supabase.auth.getUser()
 
@@ -52,23 +52,53 @@ async function getCurrentUser() {
     }
 }
 
+
 export async function bookmarkMovie(movie_id: string) {
     const user = await getCurrentUser()
+    const userId = user?.id
+
+    const { data: existingRecord, error: selectError } = await supabase.from('watched_movies').select().eq('user_id', user?.id).eq('movie_id', movie_id)
+
+
+    if (selectError) {
+        throw new Error("Error searching for existing record")
+    }
 
     if (!user) {
         throw new Error("Error getting user")
     }
-    const userId = user?.id
 
-    const data = {
-        user_id: userId ,
-        movie_id: movie_id 
+    if (existingRecord && existingRecord.length === 0) {
+        
+        const data = {
+            user_id: userId,
+            movie_id: movie_id
+        }
+
+        const { data: bookmarkData, error } = await supabase.from('watched_movies').insert([data]).select()
+        if (error) {
+            throw new Error(`Failed to bookmark movie: ${error.message}`)
+        }
     }
-
-    const { data: bookmarkData, error } = await supabase.from('watched_movies').insert([data]).select()
-    if (error) {
-        throw new Error(`Failed to bookmark movie: ${error.message}`)
+    else{
+        const {error: deleteError} = await supabase.from('watched_movies').delete().eq('user_id', user?.id).eq('movie_id', movie_id)
+        if(deleteError){
+            throw new Error("Error deleting movie from bookmarked list")
+        }
+        console.log("Deleted Movie from list")
     }
 }
+
+export async function getHistory() {
+    const user = await getCurrentUser()
+    const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
+
+    if (error) {
+        throw new Error("There was an error getting the users history", error)
+    }
+    return data
+}
+
+
 
 export const supabase = getSupabase();
