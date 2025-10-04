@@ -81,6 +81,7 @@ export async function bookmarkMovie(movie_id: string) {
         }
     }
     else{
+        // remove movie from book mark database
         const {error: deleteError} = await supabase.from('watched_movies').delete().eq('user_id', user?.id).eq('movie_id', movie_id)
         if(deleteError){
             throw new Error("Error deleting movie from bookmarked list")

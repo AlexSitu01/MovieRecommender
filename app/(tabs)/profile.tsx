@@ -1,5 +1,5 @@
 import { useSession } from '@/services/Auth';
-import { Text, View, Image } from 'react-native';
+import { Text, View, Image, TouchableOpacity } from 'react-native';
 
 
 
@@ -23,19 +23,19 @@ export default function Index() {
       </View>
 
       {/* Sign out button */}
-      <View className='flex-row w-full'>
+
+      <TouchableOpacity className='flex-row w-full text-white'
+        onPress={() => {
+          // The `app/(app)/_layout.tsx` redirects to the sign-in screen.
+          signOut();
+        }}>
         <View className='h-10 bg-blue-500 flex items-center justify-center rounded-xl w-full mt-20'>
-          <Text className='text-white'
-            onPress={() => {
-              // The `app/(app)/_layout.tsx` redirects to the sign-in screen.
-              signOut();
-            }}>
-            Sign Out
-          </Text>
+          <Text className='text-white text-md'>Sign Out</Text>
         </View>
-      </View>
+      </TouchableOpacity>
 
 
-    </View>
+
+    </View >
   );
 }
