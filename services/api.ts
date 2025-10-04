@@ -60,3 +60,15 @@ export const fetchTrendingMovies = async() => {
     const data = await response.json()
     return data.results
 }
+
+export async function fetchMoviesList(movieIds: string[]) {
+  const results = await Promise.all(
+    movieIds.map(async (id) => {
+      const res = await fetchMovieDetails(id);
+      return res; 
+    })
+  );
+
+  // 'results' should be an array of movie objects
+  return results; // just in case
+}

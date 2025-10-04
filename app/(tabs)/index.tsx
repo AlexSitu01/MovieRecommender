@@ -50,7 +50,7 @@ export default function Index() {
                     keyExtractor={(item) => item.id.toString()}
                     horizontal
                     showsHorizontalScrollIndicator={false}
-                    snapToInterval={CARD_WIDTH + 16} // card width + separator spacing
+                    snapToInterval={CARD_WIDTH + 27} // card width + separator spacing
                     decelerationRate="fast"
                     contentContainerStyle={{
                       paddingHorizontal: 16,
