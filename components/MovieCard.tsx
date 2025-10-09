@@ -2,7 +2,6 @@ import { View, Text, TouchableOpacity, Image, Button, Pressable } from 'react-na
 import React from 'react'
 import { Link } from 'expo-router'
 import { icons } from '@/constants/icons'
-import { bookmarkMovie } from '@/services/supabase'
 
 const MovieCard = ({ id, poster_path, title, vote_average, release_date, cardWidth }: Movie & { cardWidth?: number }) => {
     return (

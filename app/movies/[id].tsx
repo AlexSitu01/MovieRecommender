@@ -1,14 +1,22 @@
 import { View, Text, ScrollView, Touchable, TouchableOpacity, Pressable } from 'react-native'
-import React from 'react'
+import React, { useEffect, useState } from 'react'
 import { Image } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import useFetch from '@/services/useFetch'
 import { fetchMovieDetails } from '@/services/api'
 import { icons } from '@/constants/icons'
-import { bookmarkMovie } from '@/services/supabase'
+import { updateMovieStatus } from '@/services/supabase'
 import { useWatchHistory } from '@/services/useWatchHistory'
+import Dropdown, { OptionItem } from '@/components/DropDown'
 
 
+
+export enum movie_status {
+  Bookmarked = 'Bookmarked',
+  Completed = "Completed",
+  Dropped = 'Dropped',
+  Remove = 'Removed'
+}
 
 interface MovieInfoProps {
   lable: string;
@@ -25,23 +33,38 @@ const MovieInfo = ({ lable, value }: MovieInfoProps) => (
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
-  const { hasWatched, addMovie, removeMovie } = useWatchHistory()
+  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading } = useWatchHistory()
+  const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
 
-  const toggleBookmark = () => {
-    if (movie) {
-      const movie_id = movie.id.toString();
-      if (hasWatched(movie?.id.toString())) {
-        removeMovie(movie_id)
-      }
-      else addMovie(movie_id)
+  useEffect(() => {
+    if (!id || !movieHistory) return; // wait until both are defined
+    const status = getStatus(id as string);
+    setMovieStatus(status);
+  }, [id, movieHistory]);
+
+  const handleStatusChange = async (item: OptionItem) => {
+    const exists = movieHistory.some(m => m.movie_id === id);
+    if (!exists) {
+      addMovie(id as string, item.value as movie_status)
+    }
+    else {
+      updateMovieStatusContext(id as string, item.value as movie_status)
     }
 
+    try {
+      // Update Supabase
+      await updateMovieStatus(id as string, item.value as movie_status);
+      console.log("Updated movie status in Supabase:", item.value as movie_status);
+    } catch (err) {
+      console.error("Failed to update movie status:", err);
+    }
   }
 
   return (
     <View className='flex-1 bg-[#020212]'>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{
         paddingBottom: 80,
+        zIndex: 0
       }}>
         <View className='flex-1'>
           <Image source={{ uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}` }} className='w-full h-[550px]' resizeMode='stretch'></Image>
@@ -62,14 +85,32 @@ const MovieDetails = () => {
                 <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
               </View>
             </View>
-            <View className=''>
-              <TouchableOpacity onPress={() => {bookmarkMovie(id as string) 
-                toggleBookmark()}
+            <View className='w-1/3 h-30 z-10' >
+              {/* <TouchableOpacity onPress={() => {
+                bookmarkMovie(id as string)
+                toggleBookmark()
+              }
               } className='bg-blue-500 px-4 py-2 rounded-md'>
-                {hasWatched(movie?.id.toString() ?? "") ? <Image source={icons.checkmark} className='size-6'/> : <Image source={icons.save} className='size-6'/>}
-                
-              </TouchableOpacity>
+                {hasWatched(movie?.id.toString() ?? "") ? <Image source={icons.checkmark} className='size-6' /> : <Image source={icons.save} className='size-6' />}
+
+              </TouchableOpacity> */}
+              <Dropdown placeholder={movieStatus ?? 'Add to List'}
+                data={[{
+                  label: 'Bookmark',
+                  value: movie_status.Bookmarked
+                },
+                {
+                  label: 'Completed',
+                  value: movie_status.Completed
+                },
+                {
+                  label: 'Dropped',
+                  value: movie_status.Dropped
+                },]}
+                onChange={handleStatusChange}
+              />
             </View>
+
           </View>
 
           <MovieInfo lable='Overview' value={movie?.overview} />
