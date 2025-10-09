@@ -6,38 +6,46 @@ import { useWatchHistory } from '@/services/useWatchHistory'
 import { FlatList } from 'react-native'
 import MovieCard from '@/components/MovieCard'
 import { featureFlags } from 'react-native-screens'
+import { movie_status } from '../movies/[id]'
 
 const Saved = () => {
-  const { history } = useWatchHistory()
+  const { movieHistory } = useWatchHistory()
   const [moviesDetails, setMoviesDetails] = useState<MovieDetails[]>([])
   const [loadingMovies, setLoadingMovies] = useState<boolean>(false)
 
+
   useEffect(() => {
     async function syncMovies() {
-      if (!history) return;
+      if (!movieHistory) return;
 
-      const historySet = new Set(history);               // all current IDs
+      const historySet = new Set(movieHistory.map((movie) => movie.movie_id) as string[]);               // all current IDs
       const fetchedIds = new Set(moviesDetails.map(m => m.id.toString()));
 
-      // 1️⃣ IDs to add
-      const newIds = history.filter(id => !fetchedIds.has(id));
+      // IDs to add
+      const newIds = movieHistory.filter(movie => !fetchedIds.has(movie.movie_id));
 
       if (newIds.length > 0) {
         try {
-          const newMovies = await Promise.all(newIds.map(fetchMovieDetails));
+          const newMovies = await Promise.all(
+            newIds.map(movie => {
+              return fetchMovieDetails(movie.movie_id);
+            })
+          );
+
+
           setMoviesDetails(prev => [...prev, ...newMovies]);
         } catch (err) {
           console.error("Failed to fetch new movies", err);
         }
       }
 
-      // 2️⃣ Filter out movies removed from history
+      // Filter out movies removed from movieHistory
       setMoviesDetails(prev => prev.filter(m => historySet.has(m.id.toString())));
     }
     setLoadingMovies(true)
     syncMovies();
     setLoadingMovies(false)
-  }, [history]);
+  }, [movieHistory]);
 
   function mapMovieDetailsToMovie(item: MovieDetails): Movie {
     return {
@@ -59,6 +67,12 @@ const Saved = () => {
   }
 
   const movies: Movie[] = (moviesDetails ?? []).map(mapMovieDetailsToMovie);
+  const bookmarkedIds = movieHistory
+    .filter(m => m.movie_status === movie_status.Bookmarked)
+    .map(m => m.movie_id);
+
+  const bookmarkedMovies = movies.filter(movie => bookmarkedIds.includes(movie.id.toString()));
+
 
   return (
     <View className='bg-[#020212] flex h-full w-full items-center'>
@@ -66,7 +80,7 @@ const Saved = () => {
         {
           moviesDetails && !loadingMovies &&
           (<View className='flex'>
-            <FlatList data={movies}
+            <FlatList data={bookmarkedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}
@@ -83,21 +97,7 @@ const Saved = () => {
             />
           </View>)
         }
-        <FlatList data={movies}
-          renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
-          keyExtractor={(item) => item.id.toString()}
-          numColumns={3}
-          columnWrapperStyle={{
-            justifyContent: 'flex-start',
-            marginBottom: 10,
-            gap: 20,
-          }}
-          className='mt-5'
-          showsVerticalScrollIndicator={false}
-          ListHeaderComponent={<Text className='text-white text-lg font-bold'>Bookmarked Movies</Text>}
-          ListHeaderComponentStyle={{ paddingBottom: 20 }}
-          scrollEnabled={false}
-        />
+
       </ScrollView>
     </View>
   )

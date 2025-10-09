@@ -1,14 +1,21 @@
 import React, { createContext, PropsWithChildren, use, useEffect, useState } from 'react'
 import { getCurrentUser, supabase } from './supabase';
 import { useSession } from './Auth';
+import { movie_status } from '@/app/movies/[id]';
 
 
 type WatchHistoryContextType = {
-    history: string[]
-    addMovie: (movie_id: string) => void
+    movieHistory: movieHistory[]
+    addMovie: (movie_id: string, movie_status: movie_status) => void
     removeMovie: (movie_id: string) => void
-    hasWatched: (movie_id: string) => boolean
+    getStatus: (movie_id: string) => movie_status | null
+    updateMovieStatusContext: (moive_id: string, new_movie_status: movie_status) => void
     loading: boolean
+}
+
+type movieHistory = {
+    movie_id: string
+    movie_status: movie_status
 }
 
 export const WatchHistoryContext = createContext<WatchHistoryContextType | null>(null)
@@ -22,7 +29,7 @@ export function useWatchHistory() {
 }
 
 export function WatchHistoryProvider({ children }: PropsWithChildren) {
-    const [history, setHistory] = useState<string[]>([]);
+    const [movieHistory, setHistory] = useState<movieHistory[]>([]);
     const [loading, setLoading] = useState<boolean>(false)
     const { session } = useSession()
 
@@ -40,29 +47,59 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
                 throw new Error("Erorr getting the users history")
             }
             if (savedHistory && savedHistory.length > 0) {
-                setHistory(savedHistory.map((item) => item.movie_id))
+                setHistory(savedHistory.map((item) => ({
+                    movie_id: item.movie_id,
+                    movie_status: item.movie_status
+                })))
             }
             setLoading(false)
         }
         loadHistory()
     }, [session])
 
-    const addMovie = (movie_id: string) => {
-        if (!history.includes(movie_id)) {
-            setHistory((prev) => [...prev, movie_id])
-        }
+    const addMovie = (movie_id: string, movie_status: movie_status) => {
+
+        setHistory((prev) => {
+            const exists = prev.some((item) => item.movie_id == movie_id);
+
+            if (!exists) {
+                return [...prev, { movie_id, movie_status }]
+            }
+            return prev
+        })
+
     }
 
     const removeMovie = (movie_id: string) => {
-        setHistory((prev) => prev.filter((id) => id !== movie_id))
+        setHistory((prev) => {
+            const exists = prev.some((item) => item.movie_id == movie_id);
+
+            if (exists) {
+                return prev.filter(item => item.movie_id !== movie_id)
+            }
+            return prev
+        })
     }
 
-    const hasWatched = (movie_id: string) => {
-        return history.includes(movie_id)
+    const updateMovieStatusContext = (movie_id: string, new_movie_status: movie_status) => {
+        setHistory((prev) => {
+            return prev.map((movie) => {
+                if (movie.movie_id === movie_id) {
+                    return { ...movie, movie_status: new_movie_status }; // assign new status
+                }
+                return movie;
+            });
+        });
+    };
+
+
+    const getStatus = (movie_id: string): movie_status | null => {
+        const record = movieHistory.find(e => e.movie_id === movie_id);
+        return record?.movie_status ?? null;
     }
 
     return (
-        <WatchHistoryContext.Provider value={{ history, addMovie, removeMovie, hasWatched, loading }}>
+        <WatchHistoryContext.Provider value={{ movieHistory, addMovie, removeMovie, loading, getStatus, updateMovieStatusContext }}>
             {children}
         </WatchHistoryContext.Provider>
     )

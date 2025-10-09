@@ -1,6 +1,7 @@
 import { createClient } from '@supabase/supabase-js'
 import AsyncStorage from '@react-native-async-storage/async-storage'
 import { Platform } from 'react-native';
+import { movie_status } from '@/app/movies/[id]';
 
 export const supaBaseConfig = {
     supabaseUrl: 'https://zfzkxbblphcqsicpmedw.supabase.co',
@@ -40,7 +41,6 @@ export async function getCurrentUser() {
             return null
         }
         if (user) {
-            console.log('Current User ID:', user.id)
             return user
         } else {
             console.log('No user currently logged in.')
@@ -53,9 +53,18 @@ export async function getCurrentUser() {
 }
 
 
-export async function bookmarkMovie(movie_id: string) {
+export async function updateMovieStatus(movie_id: string, status: movie_status = movie_status.Remove) {
+
     const user = await getCurrentUser()
     const userId = user?.id
+
+    if (status === movie_status.Remove) {
+        const { error: removeError } = await supabase.from('watched_movies').delete().eq('user_id', user?.id).eq('movie_id', movie_id)
+        if (removeError) {
+            throw new Error("Error removing movie status")
+        }
+        return
+    }
 
     const { data: existingRecord, error: selectError } = await supabase.from('watched_movies').select().eq('user_id', user?.id).eq('movie_id', movie_id)
 
@@ -68,11 +77,13 @@ export async function bookmarkMovie(movie_id: string) {
         throw new Error("Error getting user")
     }
 
+    // if the movie-user record doesnt exist
     if (existingRecord && existingRecord.length === 0) {
-        
+
         const data = {
             user_id: userId,
-            movie_id: movie_id
+            movie_id: movie_id,
+            movie_status: status
         }
 
         const { data: bookmarkData, error } = await supabase.from('watched_movies').insert([data]).select()
@@ -80,13 +91,14 @@ export async function bookmarkMovie(movie_id: string) {
             throw new Error(`Failed to bookmark movie: ${error.message}`)
         }
     }
-    else{
-        // remove movie from book mark database
-        const {error: deleteError} = await supabase.from('watched_movies').delete().eq('user_id', user?.id).eq('movie_id', movie_id)
-        if(deleteError){
-            throw new Error("Error deleting movie from bookmarked list")
+    else {
+        // update movie status if the movie-user record exists
+        const { data, error: updateError } = await supabase.from('watched_movies').update({ movie_status: status }).eq('user_id', user?.id).eq('movie_id', movie_id).select()
+        console.log("Supabase update data:", data);
+        console.log("Supabase update error:", updateError);
+        if (updateError) {
+            throw new Error("Error updating movie status")
         }
-        console.log("Deleted Movie from list")
     }
 }
 
