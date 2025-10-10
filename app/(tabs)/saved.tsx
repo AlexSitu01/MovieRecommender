@@ -70,15 +70,18 @@ const Saved = () => {
   const bookmarkedIds = movieHistory
     .filter(m => m.movie_status === movie_status.Bookmarked)
     .map(m => m.movie_id);
+  const completedIds = movieHistory.filter(m => m.movie_status === movie_status.Completed).map(m => m.movie_id)
+  const droppedIds = movieHistory.filter(m => m.movie_status === movie_status.Dropped).map(m => m.movie_id)
 
   const bookmarkedMovies = movies.filter(movie => bookmarkedIds.includes(movie.id.toString()));
-
+  const completedMovies = movies.filter(movie => completedIds.includes(movie.id.toString()))
+  const droppedMovies = movies.filter(movie => droppedIds.includes(movie.id.toString()))
 
   return (
     <View className='bg-[#020212] flex h-full w-full items-center'>
       <ScrollView className="flex-1 mx-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
         {
-          moviesDetails && !loadingMovies &&
+          bookmarkedMovies?.length > 0 && !loadingMovies &&
           (<View className='flex'>
             <FlatList data={bookmarkedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
@@ -92,6 +95,48 @@ const Saved = () => {
               className='mt-5'
               showsVerticalScrollIndicator={false}
               ListHeaderComponent={<Text className='text-white text-lg font-bold'>Bookmarked Movies</Text>}
+              ListHeaderComponentStyle={{ paddingBottom: 20 }}
+              scrollEnabled={false}
+            />
+          </View>)
+        }
+
+        {
+          completedMovies?.length > 0 && !loadingMovies &&
+          (<View className='flex'>
+            <FlatList data={completedMovies}
+              renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              columnWrapperStyle={{
+                justifyContent: 'flex-start',
+                marginBottom: 10,
+                gap: 20,
+              }}
+              className='mt-5'
+              showsVerticalScrollIndicator={false}
+              ListHeaderComponent={<Text className='text-white text-lg font-bold'>Completed Movies</Text>}
+              ListHeaderComponentStyle={{ paddingBottom: 20 }}
+              scrollEnabled={false}
+            />
+          </View>)
+        }
+
+        {
+          droppedMovies?.length > 0 && !loadingMovies &&
+          (<View className='flex'>
+            <FlatList data={droppedMovies}
+              renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
+              keyExtractor={(item) => item.id.toString()}
+              numColumns={3}
+              columnWrapperStyle={{
+                justifyContent: 'flex-start',
+                marginBottom: 10,
+                gap: 20,
+              }}
+              className='mt-5'
+              showsVerticalScrollIndicator={false}
+              ListHeaderComponent={<Text className='text-white text-lg font-bold'>Dropped Movies</Text>}
               ListHeaderComponentStyle={{ paddingBottom: 20 }}
               scrollEnabled={false}
             />

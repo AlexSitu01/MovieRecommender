@@ -96,7 +96,7 @@ const MovieDetails = () => {
               </TouchableOpacity> */}
               <Dropdown placeholder={movieStatus ?? 'Add to List'}
                 data={[{
-                  label: 'Bookmark',
+                  label: 'Bookmarked',
                   value: movie_status.Bookmarked
                 },
                 {

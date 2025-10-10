@@ -1,11 +1,11 @@
-import { View, Text, Image, ImageBackground } from 'react-native'
+import { View, Text, Image, ImageBackground, Pressable } from 'react-native'
 import { Tabs } from 'expo-router'
 import { images } from '@/constants/images'
 import { icons } from '@/constants/icons'
 
-const TabIcon = ({ focused, icon, title }: any) => {
+const TabIcon = ({ focused, icon, title, onPress }: any) => {
     if (focused) {
-        return (
+        return (  
             <ImageBackground
                 source={images.highlight}
 
@@ -34,7 +34,7 @@ const _layout = () => {
             screenOptions={{
                 tabBarShowLabel: false,
                 tabBarItemStyle: {
-                    width: "100%",
+                    flex: 1,
                     height: "100%",
                     justifyContent: "center",
                     alignItems: "center",
@@ -60,7 +60,8 @@ const _layout = () => {
                         <TabIcon
                             focused={focused}
                             icon={icons.home}
-                            title="Home" />
+                            title="Home" 
+                            />
                     ),
                 }}
             />

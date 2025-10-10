@@ -149,7 +149,7 @@ const styles = StyleSheet.create({
     fontSize: 15,
     opacity: 0.8,
     flexShrink: 1,
-    maxWidth: "85%",
+    maxWidth: "100%",
     fontWeight: 500
   },
   dropdown: {
