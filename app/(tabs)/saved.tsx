@@ -82,7 +82,7 @@ const Saved = () => {
       <ScrollView className="flex-1 mx-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
         {
           bookmarkedMovies?.length > 0 && !loadingMovies &&
-          (<View className='flex'>
+          (<View className='flex pb-32'>
             <FlatList data={bookmarkedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
@@ -103,7 +103,7 @@ const Saved = () => {
 
         {
           completedMovies?.length > 0 && !loadingMovies &&
-          (<View className='flex'>
+          (<View className='flex pb-32'>
             <FlatList data={completedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
@@ -124,7 +124,7 @@ const Saved = () => {
 
         {
           droppedMovies?.length > 0 && !loadingMovies &&
-          (<View className='flex'>
+          (<View className='flex pb-32'>
             <FlatList data={droppedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
