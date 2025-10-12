@@ -1,55 +1,76 @@
-import { View, Text, Image, ImageBackground, Pressable } from 'react-native'
+import { View, Text, Image, ImageBackground, Pressable, Platform } from 'react-native'
 import { Tabs } from 'expo-router'
 import { images } from '@/constants/images'
 import { icons } from '@/constants/icons'
+import { forwardRef } from 'react'
+import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs'
+import { Feather, Ionicons } from '@expo/vector-icons'
+import { PlatformPressable } from '@react-navigation/elements'
+import * as Haptics from 'expo-haptics';
+
+
 
 const TabIcon = ({ focused, icon, title, onPress }: any) => {
     if (focused) {
-        return (  
+        return (
             <ImageBackground
                 source={images.highlight}
-
-                className="flex flex-row w-full flex-1 min-w-[112px] min-h-16 mt-4 justify-center items-center rounded-full overflow-hidden"
-            >
-                <Image source={icon} className="size-5" style={{ tintColor: "#151312" }}
-                />
-                <Text className="text-secondary text-base font-semibold ml-2">
-                    {title}
-                </Text>
+                className="flex flex-row w-full flex-1 min-w-32 min-h-24 justify-center items-center rounded-full overflow-hidden">
+                <Ionicons name={icon} color='white' size={20} ></Ionicons>
             </ImageBackground>)
     }
     else {
         return (
-            <View className='size-full justify-center items-center pt-4 rounded-full'>
-                <Image source={icon} tintColor="#A8B5DB" />
+            <View className='flex flex-row size-full justify-center items-center rounded-full'>
+                <Ionicons name={icon} color='white' size={20}></Ionicons>
             </View>
         )
     }
-
 }
+
+const HapticTab = (props: BottomTabBarButtonProps) => {
+    return (
+        <PlatformPressable
+            className=''
+            {...props}
+            onPressIn={(ev) => {
+                if (process.env.EXPO_OS === 'ios') {
+                    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light);
+                }
+                props.onPress?.(ev);
+            }} />
+    )
+}
+
 
 const _layout = () => {
     return (
         <Tabs
             screenOptions={{
+                tabBarHideOnKeyboard: true,
                 tabBarShowLabel: false,
                 tabBarItemStyle: {
                     flex: 1,
-                    height: "100%",
-                    justifyContent: "center",
-                    alignItems: "center",
+                    justifyContent: 'center',
+                    marginTop: 22.5
                 },
-                tabBarStyle: {
-                    backgroundColor: "#0F0D23",
-                    borderRadius: 50,
-                    marginHorizontal: 20,
-                    marginBottom: 36,
-                    height: 52,
-                    position: "absolute",
-                    overflow: "hidden",
-                    borderWidth: 1,
-                    borderColor: "#0F0D23",
-                },
+                tabBarStyle: Platform.select({
+                    ios: {
+                        backgroundColor: "#0F0D23",
+                        borderRadius: 50,
+                        marginHorizontal: 20,
+                        marginBottom: 36,
+                        
+                        position: "absolute",
+                        overflow: "hidden",
+                        borderWidth: 1,
+                        borderColor: "#0F0D23",
+                    },
+                    default: {}
+                }),
+                animation: 'none',
+                lazy: false,
+                tabBarButton: HapticTab,
             }}
         >
             <Tabs.Screen
@@ -59,10 +80,11 @@ const _layout = () => {
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
-                            icon={icons.home}
-                            title="Home" 
-                            />
+                            icon='home'
+                            title="Home"
+                        />
                     ),
+
                 }}
             />
 
@@ -75,7 +97,7 @@ const _layout = () => {
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
-                            icon={icons.search}
+                            icon='search'
                             title="Search"></TabIcon>
                     )
                 }} />
@@ -86,7 +108,7 @@ const _layout = () => {
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
-                            icon={icons.save}
+                            icon='bookmark'
                             title="Save"
                         />
                     )
@@ -98,7 +120,7 @@ const _layout = () => {
                     tabBarIcon: ({ focused }) => (
                         <TabIcon
                             focused={focused}
-                            icon={icons.person}
+                            icon='person'
                             title="Profile"></TabIcon>
                     )
                 }} />
@@ -107,3 +129,4 @@ const _layout = () => {
 }
 
 export default _layout
+
