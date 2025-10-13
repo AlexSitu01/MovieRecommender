@@ -1,13 +1,16 @@
+import { fetchMovieAutofill } from '@/services/api';
 import { useSession } from '@/services/Auth';
+import useFetch from '@/services/useFetch';
 import { Text, View, Image, TouchableOpacity } from 'react-native';
 
 
 
 export default function Index() {
   const { signOut } = useSession();
+
   return (
 
-    <View className='flex-1 justify-start p-6 bg-[#020212] gap-y-2 w-full h-full'>
+    <View className='flex-1 justify-start p-6 bg-[#020212] gap-y-2 w-full h-full pt-safe-offset-8'>
       {/* Profile Pic and Username*/}
       <View className='flex-row items-center justify-start gap-x-5 w-full'>
         <Image className='w-20 h-20 rounded-full' source={{ uri: 'https://animals.sandiegozoo.org/sites/default/files/inline-images/animals-lizard-redheadedagamapair.jpg' }} />
@@ -33,7 +36,6 @@ export default function Index() {
           <Text className='text-white text-md'>Sign Out</Text>
         </View>
       </TouchableOpacity>
-
 
 
     </View >
