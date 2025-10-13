@@ -23,7 +23,7 @@ function RootNavigator() {
   const { session } = useSession()
 
   return (
-    <SafeAreaView className="flex-1 bg-[#020212]">
+    <View className="flex-1">
       <StatusBar hidden={false} />
 
       <Stack>
@@ -44,6 +44,6 @@ function RootNavigator() {
           />
         </Stack.Protected>
       </Stack>
-    </SafeAreaView>
+    </View>
   )
 }

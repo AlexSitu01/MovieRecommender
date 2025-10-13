@@ -1,9 +1,9 @@
-import { View, Text, Image, FlatList, ActivityIndicator, TextInput } from 'react-native'
+import { View, Text, Image, FlatList, ActivityIndicator, TextInput, TouchableOpacity } from 'react-native'
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import { images } from '@/constants/images'
 import MovieCard from '@/components/MovieCard'
 import { useFocusEffect, useRouter } from 'expo-router'
-import { fetchMovies } from '@/services/api'
+import { fetchMovieAutofill, fetchMovies } from '@/services/api'
 import useFetch from '@/services/useFetch'
 import { icons } from '@/constants/icons'
 import SearchBar from '@/components/SearchBar'
@@ -14,26 +14,30 @@ const Search = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const searchBarRef = useRef<TextInput>(null);
 
-  const { data: movies, loading, error, refetch: loadMovies, reset } = useFetch(() => fetchMovies({ query: searchQuery }), false);
+  const { data: movies, loading, error, refetch: loadMovies, reset: resetMovies } = useFetch(() => fetchMovies({ query: searchQuery }), false);
+  const { data: autoCompleteMovies, error: autoCompleteError, refetch: loadAutoComplete, reset: resetAutoComplete } = useFetch(() => fetchMovieAutofill(searchQuery, 5), false)
 
+  // auto focus when tab switch to search
   useFocusEffect(
-      useCallback(() => {
-        const timer = setTimeout(() => {
-          searchBarRef.current?.focus();
-        }, 100);
+    useCallback(() => {
+      const timer = setTimeout(() => {
+        searchBarRef.current?.focus();
+      }, 100);
 
-        return () => clearTimeout(timer);
-      }, [])
+      return () => clearTimeout(timer);
+    }, [])
   );
 
-
+  // auto serach whenever query changes
   useEffect(() => {
     const timeoutId = setTimeout(async () => {
       if (searchQuery.trim()) {
         await loadMovies();
+        await loadAutoComplete();
       }
       else {
-        reset();
+        resetMovies();
+        resetAutoComplete();
       }
     }, 500);
 
@@ -55,7 +59,8 @@ const Search = () => {
           marginBottom: 10,
           gap: 20,
         }}
-        className="pb-32 px-5"
+        className="px-5"
+        contentContainerClassName='pb-36'
         ListHeaderComponent={
           <>
             <View className='w-full flex-row justify-center'>
@@ -68,6 +73,22 @@ const Search = () => {
                 onChangeText={(text: string) => setSearchQuery(text)}
                 ref={searchBarRef}
               />
+              {/* auto complete dropdown menu */}
+              <FlatList
+                data={autoCompleteMovies}
+                keyExtractor={(item) => item.id.toString()}
+                contentContainerClassName=''
+                
+                renderItem={({ item }) => (
+                  <TouchableOpacity
+                    onPress={() => { setSearchQuery(item.title.toString()) }}
+                    className='bg-transparent font-medium'
+                  ><Text className='text-white'>{item.title.toString()}</Text>
+                  </TouchableOpacity>
+                )}
+              >
+              </FlatList>
+
             </View>
 
             {loading && (

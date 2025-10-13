@@ -1,4 +1,4 @@
-import { View, Text, ScrollView } from 'react-native'
+import { View, Text, ScrollView, ActivityIndicator } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import useFetch from '@/services/useFetch'
 import { fetchMovieDetails, fetchMoviesList } from '@/services/api'
@@ -78,11 +78,14 @@ const Saved = () => {
   const droppedMovies = movies.filter(movie => droppedIds.includes(movie.id.toString()))
 
   return (
-    <View className='bg-[#020212] flex h-full w-full items-center'>
+    <View className='bg-[#020212] flex h-full w-full items-center pt-safe-offset-1'>
+      
+      {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3' />}
+
       <ScrollView className="flex-1 mx-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
         {
           bookmarkedMovies?.length > 0 && !loadingMovies &&
-          (<View className='flex pb-32'>
+          (<View className={`flex ${completedMovies.length == 0 && droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={bookmarkedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
@@ -103,7 +106,7 @@ const Saved = () => {
 
         {
           completedMovies?.length > 0 && !loadingMovies &&
-          (<View className='flex pb-32'>
+          (<View className={`flex ${droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={completedMovies}
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
