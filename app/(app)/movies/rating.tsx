@@ -3,18 +3,20 @@ import React, { useRef, useState } from 'react';
 import { router, useLocalSearchParams } from 'expo-router';
 import { BlurView } from 'expo-blur';
 import NumberPicker from '@/components/NumberPicker';
+import { useWatchHistory } from '@/services/useWatchHistory';
+import { RotateOutUpLeft } from 'react-native-reanimated';
+import { updateMovieRating } from '@/services/supabase';
 
 const Rating = () => {
-    const { rating: initialRating} = useLocalSearchParams<{ rating: string }>();
+    const { rating: initialRating, movie_id } = useLocalSearchParams<{ rating: string, movie_id: string }>();
     const [rating, setRating] = useState<number>(Number(initialRating ?? 1));
-    
-      const handleClose = () => {
-    // Pass the updated rating back via router.replace to [id].tsx
-    router.replace({
-      pathname: "../",
-      params: { rating: rating.toString() }
-    });
-  };
+    const {updateRating} = useWatchHistory()
+
+    const handleClose = () => {
+        updateRating(movie_id, rating)
+        updateMovieRating(movie_id, rating)
+        router.back()
+    };
 
 
     return (
@@ -22,7 +24,7 @@ const Rating = () => {
             {/* Background overlay that dismisses on press */}
             <Pressable
                 className="absolute inset-0"
-                onPress={() => router.push('../')}
+                onPress={handleClose}
             >
                 <BlurView className="flex-1" intensity={2} tint="light" />
             </Pressable>

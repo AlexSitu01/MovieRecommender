@@ -33,10 +33,9 @@ const MovieInfo = ({ lable, value }: MovieInfoProps) => (
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
-  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading } = useWatchHistory()
+  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
-  const [rating, setRating] = useState<number>(1)
-  const { rating: updatedRating } = useLocalSearchParams<{ rating: string }>();
+
 
 
   useEffect(() => {
@@ -44,11 +43,6 @@ const MovieDetails = () => {
     const status = getStatus(id as string);
     setMovieStatus(status);
   }, [id, movieHistory]);
-
-
-  useEffect(() => {
-    if (updatedRating) setRating(Number(updatedRating));
-  }, [updatedRating]);
 
   const handleStatusChange = async (item: OptionItem) => {
     const exists = movieHistory.some(m => m.movie_id === id);
@@ -86,7 +80,10 @@ const MovieDetails = () => {
           <View className='flex flex-row items-center justify-between w-full'>
             <TouchableOpacity className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2' onPress={() => router.push({
               pathname: '/movies/rating',
-              params: { rating: rating.toString() }
+              params: { 
+                movie_id: id as string,
+                rating: getRating(id as string) ?? 1 
+              }
             })}>
               <View className='flex-row items-center '>
                 <Image source={icons.star} className='size-4' />
