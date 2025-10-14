@@ -31,7 +31,6 @@ const TabIcon = ({ focused, icon, title, onPress }: any) => {
 const HapticTab = (props: BottomTabBarButtonProps) => {
     return (
         <PlatformPressable
-            className=''
             {...props}
             onPressIn={(ev) => {
                 if (process.env.EXPO_OS === 'ios') {
@@ -52,7 +51,7 @@ const _layout = () => {
                 tabBarItemStyle: {
                     flex: 1,
                     justifyContent: 'center',
-                    marginTop: 22.5
+                    paddingTop: 22.5,
                 },
                 tabBarStyle: Platform.select({
                     ios: {
@@ -60,7 +59,6 @@ const _layout = () => {
                         borderRadius: 50,
                         marginHorizontal: 20,
                         marginBottom: 36,
-                        
                         position: "absolute",
                         overflow: "hidden",
                         borderWidth: 1,
@@ -87,8 +85,6 @@ const _layout = () => {
 
                 }}
             />
-
-
 
             <Tabs.Screen
                 name='search'

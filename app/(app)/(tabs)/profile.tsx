@@ -1,13 +1,17 @@
+import { fetchMovieAutofill } from '@/services/api';
 import { useSession } from '@/services/Auth';
+import useFetch from '@/services/useFetch';
+import { Link } from 'expo-router';
 import { Text, View, Image, TouchableOpacity } from 'react-native';
 
 
 
 export default function Index() {
-  const { signOut } = useSession();
+  const { signOut, session } = useSession();
+
   return (
 
-    <View className='flex-1 justify-start p-6 bg-[#020212] gap-y-2 w-full h-full'>
+    <View className='flex-1 justify-start p-6 bg-[#020212] gap-y-2 w-full h-full pt-safe-offset-8'>
       {/* Profile Pic and Username*/}
       <View className='flex-row items-center justify-start gap-x-5 w-full'>
         <Image className='w-20 h-20 rounded-full' source={{ uri: 'https://animals.sandiegozoo.org/sites/default/files/inline-images/animals-lizard-redheadedagamapair.jpg' }} />
@@ -27,14 +31,19 @@ export default function Index() {
       <TouchableOpacity className='flex-row w-full text-white'
         onPress={() => {
           // The `app/(app)/_layout.tsx` redirects to the sign-in screen.
-          signOut();
+          if (session){
+            signOut();
+          }
+          else{
+            throw new Error("Log out without loggin in error.")
+          }
         }}>
         <View className='h-10 bg-blue-500 flex items-center justify-center rounded-xl w-full mt-20'>
           <Text className='text-white text-md'>Sign Out</Text>
         </View>
       </TouchableOpacity>
 
-
+      <Link href='/sign-in'><Text className='text-white'>Go to sign up page</Text></Link>
 
     </View >
   );

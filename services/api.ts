@@ -1,6 +1,8 @@
 // const url = 'https://api.themoviedb.org/3/authentication';
 // const options = {method: 'GET', headers: {accept: 'application/json'}};
 
+import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+
 // fetch(url, options)
 //   .then(res => res.json())
 //   .then(json => console.log(json))
@@ -71,4 +73,22 @@ export async function fetchMoviesList(movieIds: string[]) {
 
   // 'results' should be an array of movie objects
   return results; // just in case
+}
+
+// takes in a query string and the number of objects you want returned
+// 
+export async function fetchMovieAutofill(query: string, n: number){
+    const response = await fetch(`${TMBD_CONFIG.BASE_URL}search/movie?query=${query}`, {
+        method: 'GET',
+        headers: TMBD_CONFIG.headers
+    })
+    if (!response.ok){
+        throw new Error("Failed to get autofill movies")
+    }
+    const data = await response.json()
+
+    // return results in descending order of populatirty
+    const res = data.results.sort((a: { popularity: number; },b: { popularity: number; }) => b.popularity - a.popularity)
+    const end = Math.min(res.length, n)
+    return res.slice(0, end)
 }
