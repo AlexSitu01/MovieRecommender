@@ -53,7 +53,7 @@ export async function getCurrentUser() {
 }
 
 
-export async function updateMovieStatus(movie_id: string, status: movie_status = movie_status.Remove) {
+export async function updateMovieStatus(movie_id: string, status: movie_status = movie_status.Remove, rating: number | null = null) {
 
     const user = await getCurrentUser()
     const userId = user?.id
@@ -83,7 +83,8 @@ export async function updateMovieStatus(movie_id: string, status: movie_status =
         const data = {
             user_id: userId,
             movie_id: movie_id,
-            movie_status: status
+            movie_status: status,
+            user_rating: rating
         }
 
         const { data: bookmarkData, error } = await supabase.from('watched_movies').insert([data]).select()
@@ -100,6 +101,33 @@ export async function updateMovieStatus(movie_id: string, status: movie_status =
             throw new Error("Error updating movie status")
         }
     }
+}
+
+// can only be used if the movie entry already exists for that user
+export async function updateMovieRating(movie_id: string, rating: number | null) {
+    const user = await getCurrentUser()
+
+    const { data: existingRecord, error: selectError } = await supabase.from('watched_movies').select().eq('user_id', user?.id).eq('movie_id', movie_id)
+
+    if (selectError) {
+        throw new Error("Error searching for existing record")
+    }
+
+    if (!user) {
+        throw new Error("Error getting user")
+    }
+
+     if (existingRecord && existingRecord.length === 0) {
+        throw new Error("Updating rating error for nonexisitng movie entry")
+     }
+     else{
+        // update movie rating if the movie-user record exists
+        const { data, error: updateError } = await supabase.from('watched_movies').update({ user_rating: rating }).eq('user_id', user?.id).eq('movie_id', movie_id).select()
+        console.log("Supabase update data:", data);
+        if (updateError) {
+            throw new Error("Error updating movie rating")
+        }
+     }
 }
 
 export async function getHistory() {

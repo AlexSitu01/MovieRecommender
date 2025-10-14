@@ -8,14 +8,17 @@ type WatchHistoryContextType = {
     movieHistory: movieHistory[]
     addMovie: (movie_id: string, movie_status: movie_status) => void
     removeMovie: (movie_id: string) => void
+    getRating: (movie_id: string) => number | null
     getStatus: (movie_id: string) => movie_status | null
-    updateMovieStatusContext: (moive_id: string, new_movie_status: movie_status) => void
+    updateMovieStatusContext: (moive_id: string, new_movie_status: movie_status) => void,
+    updateRating: (movie_id: string, new_rating: number) => void,
     loading: boolean
 }
 
 type movieHistory = {
     movie_id: string
     movie_status: movie_status
+    user_rating: number | null
 }
 
 export const WatchHistoryContext = createContext<WatchHistoryContextType | null>(null)
@@ -49,7 +52,8 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
             if (savedHistory && savedHistory.length > 0) {
                 setHistory(savedHistory.map((item) => ({
                     movie_id: item.movie_id,
-                    movie_status: item.movie_status
+                    movie_status: item.movie_status,
+                    user_rating: item.user_rating
                 })))
             }
             setLoading(false)
@@ -57,13 +61,13 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
         loadHistory()
     }, [session])
 
-    const addMovie = (movie_id: string, movie_status: movie_status) => {
+    const addMovie = (movie_id: string, movie_status: movie_status, user_rating: number | null = null) => {
 
         setHistory((prev) => {
             const exists = prev.some((item) => item.movie_id == movie_id);
 
             if (!exists) {
-                return [...prev, { movie_id, movie_status }]
+                return [...prev, { movie_id, movie_status, user_rating }]
             }
             return prev
         })
@@ -81,11 +85,22 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
         })
     }
 
-    const updateMovieStatusContext = (movie_id: string, new_movie_status: movie_status) => {
+    const updateMovieStatusContext = (movie_id: string, new_movie_status: movie_status, new_rating: number | null = null) => {
         setHistory((prev) => {
             return prev.map((movie) => {
                 if (movie.movie_id === movie_id) {
-                    return { ...movie, movie_status: new_movie_status }; // assign new status
+                    return { ...movie, movie_status: new_movie_status, user_rating: new_rating }; // assign new status
+                }
+                return movie;
+            });
+        });
+    };
+
+    const updateRating = (movie_id: string, new_rating: number) => {
+        setHistory((prev) => {
+            return prev.map((movie) => {
+                if (movie.movie_id === movie_id) {
+                    return { ...movie, user_rating: new_rating }; // assign new rating
                 }
                 return movie;
             });
@@ -98,8 +113,13 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
         return record?.movie_status ?? null;
     }
 
+    const getRating = (movie_id: string): number | null => {
+        const record = movieHistory.find(e => e.movie_id == movie_id)
+        return record?.user_rating ?? null
+    }
+
     return (
-        <WatchHistoryContext.Provider value={{ movieHistory, addMovie, removeMovie, loading, getStatus, updateMovieStatusContext }}>
+        <WatchHistoryContext.Provider value={{ movieHistory, addMovie, removeMovie, loading, getStatus, updateMovieStatusContext, getRating, updateRating }}>
             {children}
         </WatchHistoryContext.Provider>
     )
