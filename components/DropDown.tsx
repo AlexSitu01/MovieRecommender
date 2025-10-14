@@ -1,18 +1,18 @@
-import React, { useState, useRef, useCallback } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  FlatList,
-  Modal,
-  TouchableWithoutFeedback,
-  Platform,
-  UIManager,
-  findNodeHandle,
-} from "react-native";
+import { movie_status } from "@/app/(app)/movies/[id]";
 import { AntDesign } from "@expo/vector-icons";
-import { movie_status } from "@/app/movies/[id]";
+import { useCallback, useRef, useState } from "react";
+import {
+    FlatList,
+    Modal,
+    Platform,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    UIManager,
+    View,
+    findNodeHandle,
+} from "react-native";
 
  export type OptionItem = {
   value: movie_status;

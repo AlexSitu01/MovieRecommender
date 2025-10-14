@@ -1,11 +1,8 @@
-import { View, Text, ScrollView, ActivityIndicator } from 'react-native'
-import React, { useEffect, useState } from 'react'
-import useFetch from '@/services/useFetch'
-import { fetchMovieDetails, fetchMoviesList } from '@/services/api'
-import { useWatchHistory } from '@/services/useWatchHistory'
-import { FlatList } from 'react-native'
 import MovieCard from '@/components/MovieCard'
-import { featureFlags } from 'react-native-screens'
+import { fetchMovieDetails } from '@/services/api'
+import { useWatchHistory } from '@/services/useWatchHistory'
+import { useEffect, useState } from 'react'
+import { ActivityIndicator, FlatList, ScrollView, Text, View } from 'react-native'
 import { movie_status } from '../movies/[id]'
 
 const Saved = () => {
@@ -87,6 +84,7 @@ const Saved = () => {
           bookmarkedMovies?.length > 0 && !loadingMovies &&
           (<View className={`flex ${completedMovies.length == 0 && droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={bookmarkedMovies}
+              
               renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}

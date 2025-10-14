@@ -1,7 +1,7 @@
-import React, { createContext, PropsWithChildren, use, useEffect, useState } from 'react'
-import { getCurrentUser, supabase } from './supabase';
+import { movie_status } from '@/app/(app)/movies/[id]';
+import { createContext, PropsWithChildren, use, useEffect, useState } from 'react';
 import { useSession } from './Auth';
-import { movie_status } from '@/app/movies/[id]';
+import { getCurrentUser, supabase } from './supabase';
 
 
 type WatchHistoryContextType = {

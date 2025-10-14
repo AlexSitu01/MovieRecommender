@@ -1,12 +1,13 @@
 import { fetchMovieAutofill } from '@/services/api';
 import { useSession } from '@/services/Auth';
 import useFetch from '@/services/useFetch';
+import { Link } from 'expo-router';
 import { Text, View, Image, TouchableOpacity } from 'react-native';
 
 
 
 export default function Index() {
-  const { signOut } = useSession();
+  const { signOut, session } = useSession();
 
   return (
 
@@ -30,13 +31,19 @@ export default function Index() {
       <TouchableOpacity className='flex-row w-full text-white'
         onPress={() => {
           // The `app/(app)/_layout.tsx` redirects to the sign-in screen.
-          signOut();
+          if (session){
+            signOut();
+          }
+          else{
+            throw new Error("Log out without loggin in error.")
+          }
         }}>
         <View className='h-10 bg-blue-500 flex items-center justify-center rounded-xl w-full mt-20'>
           <Text className='text-white text-md'>Sign Out</Text>
         </View>
       </TouchableOpacity>
 
+      <Link href='/sign-in'><Text className='text-white'>Go to sign up page</Text></Link>
 
     </View >
   );

@@ -1,7 +1,7 @@
-import { createClient } from '@supabase/supabase-js'
-import AsyncStorage from '@react-native-async-storage/async-storage'
+import { movie_status } from '@/app/(app)/movies/[id]';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { createClient } from '@supabase/supabase-js';
 import { Platform } from 'react-native';
-import { movie_status } from '@/app/movies/[id]';
 
 export const supaBaseConfig = {
     supabaseUrl: 'https://zfzkxbblphcqsicpmedw.supabase.co',

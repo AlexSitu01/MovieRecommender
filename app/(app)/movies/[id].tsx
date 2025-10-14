@@ -35,12 +35,20 @@ const MovieDetails = () => {
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
   const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
+  const [rating, setRating] = useState<number>(1)
+  const { rating: updatedRating } = useLocalSearchParams<{ rating: string }>();
+
 
   useEffect(() => {
     if (!id || !movieHistory) return; // wait until both are defined
     const status = getStatus(id as string);
     setMovieStatus(status);
   }, [id, movieHistory]);
+
+
+  useEffect(() => {
+    if (updatedRating) setRating(Number(updatedRating));
+  }, [updatedRating]);
 
   const handleStatusChange = async (item: OptionItem) => {
     const exists = movieHistory.some(m => m.movie_id === id);
@@ -76,7 +84,10 @@ const MovieDetails = () => {
             <Text className='text-gray-400 text-sm'>{movie?.runtime}m</Text>
           </View>
           <View className='flex flex-row items-center justify-between w-full'>
-            <View className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2'>
+            <TouchableOpacity className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2' onPress={() => router.push({
+              pathname: '/movies/rating',
+              params: { rating: rating.toString() }
+            })}>
               <View className='flex-row items-center '>
                 <Image source={icons.star} className='size-4' />
                 <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
@@ -84,16 +95,9 @@ const MovieDetails = () => {
               <View className='flex-row items-center'>
                 <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
               </View>
-            </View>
+            </TouchableOpacity>
             <View className='w-1/3 h-30 z-10' >
-              {/* <TouchableOpacity onPress={() => {
-                bookmarkMovie(id as string)
-                toggleBookmark()
-              }
-              } className='bg-blue-500 px-4 py-2 rounded-md'>
-                {hasWatched(movie?.id.toString() ?? "") ? <Image source={icons.checkmark} className='size-6' /> : <Image source={icons.save} className='size-6' />}
 
-              </TouchableOpacity> */}
               <Dropdown placeholder={movieStatus ?? 'Add to List'}
                 data={[{
                   label: 'Bookmarked',
