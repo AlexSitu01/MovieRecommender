@@ -1,5 +1,6 @@
 import { SplashScreen } from 'expo-router';
 import { useSession } from './Auth';
+import { ActivityIndicator } from 'react-native';
 
 
 export function SplashScreenController() {
@@ -8,6 +9,9 @@ export function SplashScreenController() {
   if (!isLoading) {
     SplashScreen.hideAsync();
   }
+  
 
-  return null;
+  return (
+    null
+  );
 }
