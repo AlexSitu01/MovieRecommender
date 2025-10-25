@@ -1,12 +1,14 @@
 import { View, Text, Image, ImageBackground, Pressable, Platform } from 'react-native'
-import { Tabs } from 'expo-router'
+import { Redirect, Tabs } from 'expo-router'
 import { images } from '@/constants/images'
 import { icons } from '@/constants/icons'
 import { forwardRef } from 'react'
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs'
-import { Feather, Ionicons } from '@expo/vector-icons'
+import { Ionicons } from '@expo/vector-icons'
 import { PlatformPressable } from '@react-navigation/elements'
 import * as Haptics from 'expo-haptics';
+import { useSession } from '@/services/Auth'
+
 
 
 
@@ -43,6 +45,13 @@ const HapticTab = (props: BottomTabBarButtonProps) => {
 
 
 const _layout = () => {
+    const { session } = useSession()
+
+    if (!session) {
+        // Only redirect once — not inside a persistent parent layout
+        return <Redirect href="/sign-in" />;
+    }
+
     return (
         <Tabs
             screenOptions={{

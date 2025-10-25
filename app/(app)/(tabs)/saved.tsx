@@ -11,6 +11,7 @@ const Saved = () => {
   const [loadingMovies, setLoadingMovies] = useState<boolean>(false)
 
 
+  //rerender movie everytime 
   useEffect(() => {
     async function syncMovies() {
       if (!movieHistory) return;

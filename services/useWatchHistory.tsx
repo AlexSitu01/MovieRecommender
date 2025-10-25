@@ -110,7 +110,7 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
 
     const getStatus = (movie_id: string): movie_status | null => {
         const record = movieHistory.find(e => e.movie_id === movie_id);
-        return record?.movie_status ?? null;
+        return record?.movie_status as movie_status ?? null;
     }
 
     const getRating = (movie_id: string): number | null => {
