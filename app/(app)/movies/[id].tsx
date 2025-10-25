@@ -8,6 +8,8 @@ import { icons } from '@/constants/icons'
 import { updateMovieStatus } from '@/services/supabase'
 import { useWatchHistory } from '@/services/useWatchHistory'
 import Dropdown, { OptionItem } from '@/components/DropDown'
+import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry'
+import { Ionicons } from '@expo/vector-icons'
 
 
 
@@ -33,7 +35,7 @@ const MovieInfo = ({ lable, value }: MovieInfoProps) => (
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
-  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating } = useWatchHistory()
+  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating, updateRating } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
 
 
@@ -45,6 +47,8 @@ const MovieDetails = () => {
   }, [id, movieHistory]);
 
   const handleStatusChange = async (item: OptionItem) => {
+
+    // update local movieHistory
     const exists = movieHistory.some(m => m.movie_id === id);
     if (!exists) {
       addMovie(id as string, item.value as movie_status)
@@ -52,7 +56,7 @@ const MovieDetails = () => {
     else {
       updateMovieStatusContext(id as string, item.value as movie_status)
     }
-
+    // update movie history in supabase
     try {
       // Update Supabase
       await updateMovieStatus(id as string, item.value as movie_status);
@@ -72,28 +76,18 @@ const MovieDetails = () => {
           <Image source={{ uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}` }} className='w-full h-[550px]' resizeMode='stretch'></Image>
         </View>
         <View className='flex-col items-start justify-center mt-5 px-5'>
-          <Text className='text-white font-bold text-xl'>{movie?.title}</Text>
-          <View className='flex-row items-center gap-x-4 mt-2'>
-            <Text className='text-gray-400 text-sm'>{movie?.release_date?.split('-')[0]}</Text>
-            <Text className='text-gray-400 text-sm'>{movie?.runtime}m</Text>
-          </View>
-          <View className='flex flex-row items-center justify-between w-full'>
-            <TouchableOpacity className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2' onPress={() => router.push({
-              pathname: '/movies/rating',
-              params: { 
-                movie_id: id as string,
-                rating: getRating(id as string) ?? 1 
-              }
-            })}>
-              <View className='flex-row items-center '>
-                <Image source={icons.star} className='size-4' />
-                <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
-              </View>
-              <View className='flex-row items-center'>
-                <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
-              </View>
-            </TouchableOpacity>
-            <View className='w-1/3 h-30 z-10' >
+          <View className='flex-row items-center justify-between w-full gap-1'>
+
+            <Text
+              className='text-white font-bold text-xl'
+              style={{ flex: 2 }} // Takes 2/3 of space
+              numberOfLines={2}
+              ellipsizeMode='tail'
+            >
+              {movie?.title}
+            </Text>
+
+            <View className='w-1/3 h-30 z-10 flex-shrink-0' >
 
               <Dropdown placeholder={movieStatus ?? 'Add to List'}
                 data={[{
@@ -111,6 +105,40 @@ const MovieDetails = () => {
                 onChange={handleStatusChange}
               />
             </View>
+
+          </View>
+
+          <View className='flex-row items-center gap-x-4 mt-2'>
+            <Text className='text-gray-400 text-sm'>{movie?.release_date?.split('-')[0]}</Text>
+            <Text className='text-gray-400 text-sm'>{movie?.runtime}m</Text>
+          </View>
+          <View className='flex flex-row items-center justify-between w-full'>
+            <TouchableOpacity className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2' onPress={() => router.push({
+              pathname: '/movies/rating',
+              params: {
+                movie_id: id as string,
+                rating: getRating(id as string) ?? 1
+              },
+
+            })} disabled={contextLoading || loading || getStatus(id as string) === null || getStatus(id as string) === movie_status.Bookmarked}>
+              <View className='flex-row items-center '>
+                <Image source={icons.star} className='size-4' />
+                <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
+              </View>
+              <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
+            </TouchableOpacity>
+            {(() => {
+              const status = getStatus(id as string);
+              const rating = getRating(id as string);
+              const shouldShowRating = (status === movie_status.Completed || status === movie_status.Dropped) && rating !== null;
+
+              return shouldShowRating &&
+                <View className='flex flex-row gap-x-2 items-center'>
+                  <Ionicons name='film-outline' color='white' size={20} ></Ionicons>
+                  <Text className='text-white text-lg font-semibold'>{rating}</Text>
+                </View>
+
+            })()}
 
           </View>
 
