@@ -1,13 +1,14 @@
 import { View, Text, Image, ImageBackground, Pressable, Platform } from 'react-native'
-import { Redirect, Tabs } from 'expo-router'
+import { Redirect, router, Tabs } from 'expo-router'
 import { images } from '@/constants/images'
 import { icons } from '@/constants/icons'
-import { forwardRef } from 'react'
+import { forwardRef, useEffect, useState } from 'react'
 import { BottomTabBarButtonProps } from '@react-navigation/bottom-tabs'
 import { Ionicons } from '@expo/vector-icons'
 import { PlatformPressable } from '@react-navigation/elements'
 import * as Haptics from 'expo-haptics';
 import { useSession } from '@/services/Auth'
+import { getCurrentUser } from '@/services/supabase'
 
 
 
@@ -46,11 +47,20 @@ const HapticTab = (props: BottomTabBarButtonProps) => {
 
 const _layout = () => {
     const { session } = useSession()
+    const [userID, setUserID] = useState<string | null>(null)
 
-    if (!session) {
-        // Only redirect once — not inside a persistent parent layout
-        return <Redirect href="/sign-in" />;
-    }
+    useEffect(() => {
+        const loadUser = async () => {
+            const user = await getCurrentUser();
+            setUserID(user?.id || null);
+        }
+        if (session) {
+            loadUser()
+        }
+        else{
+            router.replace("/sign-in");
+        }
+    }, [session])
 
     return (
         <Tabs
@@ -118,6 +128,7 @@ const _layout = () => {
                         />
                     )
                 }} />
+
             <Tabs.Screen
                 name='profile'
                 options={{
@@ -126,9 +137,17 @@ const _layout = () => {
                         <TabIcon
                             focused={focused}
                             icon='person'
-                            title="Profile"></TabIcon>
+                            title='profile'></TabIcon>
                     )
                 }} />
+            <Tabs.Screen
+                name='profiles/[id]'
+                options={{
+                    href: null, // Prevents it from showing in tab bar
+                    headerShown: false,
+                }}
+            />
+
         </Tabs>
     )
 }

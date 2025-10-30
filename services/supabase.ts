@@ -140,6 +140,33 @@ export async function getHistory() {
     return data
 }
 
+export async function getTopMovies(){
+    const user = await getCurrentUser()
+    const { data, error } = await supabase.from('top_movies').select().eq('user_id', user?.id)
 
+    if (error) {
+        throw new Error("There was an error getting the users history", error)
+    }
+    return data
+}
+
+export async function updateUsername(username: string) {
+    const user = await getCurrentUser()
+    const {data, error} = await supabase.from('profiles').update({username}).eq('id', user?.id)
+    if (error) {
+        throw new Error(error.message)
+    }
+    return data
+}
+
+export async function getProfile() {
+    const user = await getCurrentUser()
+    const { data, error } = await supabase.from('profiles').select().eq('id', user?.id).single()
+
+    if (error) {
+        throw new Error("There was an error getting the users profile", error)
+    }
+    return data
+}
 
 export const supabase = getSupabase();
