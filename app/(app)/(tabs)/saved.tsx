@@ -45,7 +45,7 @@ const Saved = () => {
     setLoadingMovies(false)
   }, [movieHistory]);
 
-  function mapMovieDetailsToMovie(item: MovieDetails): Movie {
+function mapMovieDetailsToMovie(item: MovieDetails): Movie {
     return {
       id: item.id,
       title: item.title,
@@ -77,7 +77,8 @@ const Saved = () => {
 
   return (
     <View className='bg-[#020212] flex h-full w-full items-center pt-safe-offset-1'>
-      
+      {/* Shows text if no movies have been bookmarked */}
+      {movies.length == 0 && !loadingMovies && <Text className='text-[#888888] mt-40'>No saved movies yet.</Text>}
       {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3' />}
 
       <ScrollView className="flex-1 mx-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>

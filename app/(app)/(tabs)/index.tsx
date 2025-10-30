@@ -1,25 +1,40 @@
 import MovieCard from "@/components/MovieCard";
 import SearchBar from "@/components/SearchBar";
+import SignUpModal from "@/components/SignUpModal";
 import { icons } from "@/constants/icons";
 import { images } from "@/constants/images";
 import { fetchMovies, fetchTrendingMovies } from "@/services/api";
+import { useSession } from "@/services/Auth";
+import { getProfile } from "@/services/supabase";
 import useFetch from "@/services/useFetch";
-import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
+import { Redirect, useRouter } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
 
 
 export default function Index() {
 
   const router = useRouter();
-
+  const {session} = useSession();
 
   const { data: movies, loading: moviesLoading, error: moviesError } = useFetch(() => fetchMovies({ query: "" }));
   const { data: trendingMovies, loading: trendingLoading, error: trendingError } = useFetch(() => fetchTrendingMovies())
   const { width } = Dimensions.get("window");
   const CARD_WIDTH = width * 0.6;
-
-
+  const [userNameModalVisible, setUserNameModalVisible] = useState<boolean>(false);
+  
+  useEffect(() => {
+    const checkUserName = async () => {
+      if (session) {
+        const profile = await getProfile()
+        if (!profile?.username) {
+          setUserNameModalVisible(true);
+        }
+      }
+    }
+    checkUserName();
+  }, [session]);
+  
 
   return (
     <View className="flex-1">
@@ -83,6 +98,7 @@ export default function Index() {
           )}
         </ScrollView>
       </View>
+      <SignUpModal visible = {userNameModalVisible} setVisible = {setUserNameModalVisible}/>
     </View>
 
   );

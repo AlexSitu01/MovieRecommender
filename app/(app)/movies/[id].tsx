@@ -76,7 +76,7 @@ const MovieDetails = () => {
           <Image source={{ uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}` }} className='w-full h-[550px]' resizeMode='stretch'></Image>
         </View>
         <View className='flex-col items-start justify-center mt-5 px-5'>
-          <View className='flex-row items-center justify-between w-full gap-1'>
+          <View className='flex-row items-center justify-between w-full gap-2'>
 
             <Text
               className='text-white font-bold text-xl'
