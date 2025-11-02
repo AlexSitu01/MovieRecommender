@@ -17,7 +17,7 @@ type WatchHistoryContextType = {
 
 type movieHistory = {
     movie_id: string
-    movie_status: movie_status
+    movie_status: movie_status | null
     user_rating: number | null
 }
 
@@ -85,7 +85,7 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
         })
     }
 
-    const updateMovieStatusContext = (movie_id: string, new_movie_status: movie_status, new_rating: number | null = null) => {
+    const updateMovieStatusContext = (movie_id: string, new_movie_status: movie_status | null, new_rating: number | null = null) => {
         setHistory((prev) => {
             return prev.map((movie) => {
                 if (movie.movie_id === movie_id) {
