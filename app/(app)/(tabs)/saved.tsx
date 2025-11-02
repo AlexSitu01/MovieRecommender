@@ -2,7 +2,7 @@ import MovieCard from '@/components/MovieCard'
 import { fetchMovieDetails } from '@/services/api'
 import { useWatchHistory } from '@/services/useWatchHistory'
 import { useEffect, useState } from 'react'
-import { ActivityIndicator, FlatList, ScrollView, Text, View } from 'react-native'
+import { ActivityIndicator, Dimensions, FlatList, ScrollView, Text, View } from 'react-native'
 import { movie_status } from '../movies/[id]'
 
 const Saved = () => {
@@ -10,6 +10,11 @@ const Saved = () => {
   const [moviesDetails, setMoviesDetails] = useState<MovieDetails[]>([])
   const [loadingMovies, setLoadingMovies] = useState<boolean>(false)
 
+  const screenWidth = Dimensions.get("window").width;
+  const horizontalPadding = 40; // mx-5 = 20px on each side
+  const gap = 20;
+  const numColumns = 3;
+  const cardWidth = (screenWidth - horizontalPadding - (gap * (numColumns - 1))) / numColumns;
 
   //rerender movie everytime 
   useEffect(() => {
@@ -45,7 +50,7 @@ const Saved = () => {
     setLoadingMovies(false)
   }, [movieHistory]);
 
-function mapMovieDetailsToMovie(item: MovieDetails): Movie {
+  function mapMovieDetailsToMovie(item: MovieDetails): Movie {
     return {
       id: item.id,
       title: item.title,
@@ -75,25 +80,27 @@ function mapMovieDetailsToMovie(item: MovieDetails): Movie {
   const completedMovies = movies.filter(movie => completedIds.includes(movie.id.toString()))
   const droppedMovies = movies.filter(movie => droppedIds.includes(movie.id.toString()))
 
+
   return (
     <View className='bg-[#020212] flex h-full w-full items-center pt-safe-offset-1'>
       {/* Shows text if no movies have been bookmarked */}
       {movies.length == 0 && !loadingMovies && <Text className='text-[#888888] mt-40'>No saved movies yet.</Text>}
       {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3' />}
 
-      <ScrollView className="flex-1 mx-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
+      <ScrollView className="flex-1 px-5 w-full" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }} showsHorizontalScrollIndicator={false} >
         {
           bookmarkedMovies?.length > 0 && !loadingMovies &&
           (<View className={`flex ${completedMovies.length == 0 && droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={bookmarkedMovies}
-              
-              renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
+
+              renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth} ></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}
               columnWrapperStyle={{
                 justifyContent: 'flex-start',
                 marginBottom: 10,
                 gap: 20,
+                width: '100%'
               }}
               className='mt-5'
               showsVerticalScrollIndicator={false}
@@ -108,7 +115,7 @@ function mapMovieDetailsToMovie(item: MovieDetails): Movie {
           completedMovies?.length > 0 && !loadingMovies &&
           (<View className={`flex ${droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={completedMovies}
-              renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
+              renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}
               columnWrapperStyle={{
@@ -129,7 +136,7 @@ function mapMovieDetailsToMovie(item: MovieDetails): Movie {
           droppedMovies?.length > 0 && !loadingMovies &&
           (<View className='flex pb-32'>
             <FlatList data={droppedMovies}
-              renderItem={({ item }) => (<MovieCard {...item}></MovieCard>)}
+              renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth}></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}
               columnWrapperStyle={{

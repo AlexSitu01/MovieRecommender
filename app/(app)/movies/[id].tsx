@@ -17,7 +17,7 @@ export enum movie_status {
   Bookmarked = 'Bookmarked',
   Completed = "Completed",
   Dropped = 'Dropped',
-  Remove = 'Removed'
+  Remove = 'Removed',
 }
 
 interface MovieInfoProps {
@@ -35,10 +35,8 @@ const MovieInfo = ({ lable, value }: MovieInfoProps) => (
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
-  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating, updateRating } = useWatchHistory()
+  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
-
-
 
   useEffect(() => {
     if (!id || !movieHistory) return; // wait until both are defined
@@ -49,13 +47,20 @@ const MovieDetails = () => {
   const handleStatusChange = async (item: OptionItem) => {
 
     // update local movieHistory
-    const exists = movieHistory.some(m => m.movie_id === id);
-    if (!exists) {
-      addMovie(id as string, item.value as movie_status)
+    if (item.value === movie_status.Remove) {
+      removeMovie(id as string);
+      setMovieStatus(null);
+
+    } else {
+      const exists = movieHistory.some(m => m.movie_id === id);
+      if (!exists) {
+        addMovie(id as string, item.value as movie_status)
+      }
+      else {
+        updateMovieStatusContext(id as string, item.value as movie_status)
+      }
     }
-    else {
-      updateMovieStatusContext(id as string, item.value as movie_status)
-    }
+
     // update movie history in supabase
     try {
       // Update Supabase
@@ -66,14 +71,21 @@ const MovieDetails = () => {
     }
   }
 
+
+
   return (
     <View className='flex-1 bg-[#020212]'>
       <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{
         paddingBottom: 80,
         zIndex: 0
       }}>
-        <View className='flex-1'>
-          <Image source={{ uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}` }} className='w-full h-[550px]' resizeMode='stretch'></Image>
+        <View className='relative'>
+          <Image source={{ uri: `https://image.tmdb.org/t/p/w500${movie?.poster_path}` }} className='w-full h-[550px] relative' resizeMode='stretch' />
+          {(movieStatus == movie_status.Bookmarked || movieStatus == movie_status.Dropped || movieStatus == movie_status.Completed) && <TouchableOpacity className='absolute bottom-4 right-4 bg-white px-4 py-2 rounded-lg'
+            onPress={() => handleStatusChange({ value: movie_status.Remove, label: '' } as OptionItem)} >
+            <Ionicons name='trash-outline' size={24} color='black'></Ionicons>
+          </TouchableOpacity>}
+
         </View>
         <View className='flex-col items-start justify-center mt-5 px-5'>
           <View className='flex-row items-center justify-between w-full gap-2'>
@@ -128,9 +140,8 @@ const MovieDetails = () => {
               <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
             </TouchableOpacity>
             {(() => {
-              const status = getStatus(id as string);
               const rating = getRating(id as string);
-              const shouldShowRating = (status === movie_status.Completed || status === movie_status.Dropped) && rating !== null;
+              const shouldShowRating = (movieStatus === movie_status.Completed || movieStatus === movie_status.Dropped) && rating !== null;
 
               return shouldShowRating &&
                 <View className='flex flex-row gap-x-2 items-center'>
