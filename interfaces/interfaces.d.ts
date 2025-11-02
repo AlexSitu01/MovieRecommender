@@ -83,4 +83,5 @@ interface Profile{
   full_name?: string;
   avatar_url?: string;
   website?: string;
+  bio?: string;
 }
