@@ -117,17 +117,41 @@ export async function updateMovieRating(movie_id: string, rating: number | null)
         throw new Error("Error getting user")
     }
 
-     if (existingRecord && existingRecord.length === 0) {
+    if (existingRecord && existingRecord.length === 0) {
         throw new Error("Updating rating error for nonexisitng movie entry")
-     }
-     else{
+    }
+    else {
         // update movie rating if the movie-user record exists
         const { data, error: updateError } = await supabase.from('watched_movies').update({ user_rating: rating }).eq('user_id', user?.id).eq('movie_id', movie_id).select()
-        console.log("Supabase update data:", data);
         if (updateError) {
             throw new Error("Error updating movie rating")
         }
-     }
+    }
+}
+
+export async function updateFavoritedMovieSB(movie_id: string, favorited: boolean) {
+    const user = await getCurrentUser()
+
+    const { data: existingRecord, error: selectError } = await supabase.from('watched_movies').select().eq('user_id', user?.id).eq('movie_id', movie_id)
+
+    if (selectError) {
+        throw new Error("Error searching for existing record")
+    }
+
+    if (!user) {
+        throw new Error("Error getting user")
+    }
+
+    if (existingRecord && existingRecord.length === 0) {
+        throw new Error("Favoriting error for nonexisitng movie entry")
+    }
+    else {
+        // update movie rating if the movie-user record exists
+        const { data, error: updateError } = await supabase.from('watched_movies').update({ favorited: favorited }).eq('user_id', user?.id).eq('movie_id', movie_id).select()
+        if (updateError) {
+            throw new Error("Error favoriting movie")
+        }
+    }
 }
 
 export async function getHistory() {
@@ -135,24 +159,27 @@ export async function getHistory() {
     const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
 
     if (error) {
-        throw new Error("There was an error getting the users history", error)
+        throw new Error("There was an error getting the users history DB", error)
     }
     return data
 }
 
-export async function getTopMovies(){
+export async function getTopMovies() {
     const user = await getCurrentUser()
-    const { data, error } = await supabase.from('top_movies').select().eq('user_id', user?.id)
-
+    const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
     if (error) {
-        throw new Error("There was an error getting the users history", error)
+        throw new Error("There was an error getting the users top movies history DB", error)
     }
-    return data
+    const res = data.filter((movie) => {
+        return movie?.favorited
+    })
+
+    return res
 }
 
 export async function updateUsername(username: string) {
     const user = await getCurrentUser()
-    const {data, error} = await supabase.from('profiles').update({username}).eq('id', user?.id)
+    const { data, error } = await supabase.from('profiles').update({ username }).eq('id', user?.id)
     if (error) {
         throw new Error(error.message)
     }
@@ -168,5 +195,17 @@ export async function getProfile() {
     }
     return data
 }
+
+export async function updateProfile({ username, bio, avatar_url }: Profile) {
+    const user = await getCurrentUser()
+    const { data, error } = await supabase.from('profiles').update({ username: username, bio: bio, avatar_url: avatar_url }).eq('id', user?.id)
+
+    if (error) {
+        throw new Error("There was an error updating the users profile", error)
+    }
+    return data
+}
+
+
 
 export const supabase = getSupabase();

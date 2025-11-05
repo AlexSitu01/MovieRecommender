@@ -34,8 +34,7 @@ const Saved = () => {
               return fetchMovieDetails(movie.movie_id);
             })
           );
-
-
+          
           setMoviesDetails(prev => [...prev, ...newMovies]);
         } catch (err) {
           console.error("Failed to fetch new movies", err);
