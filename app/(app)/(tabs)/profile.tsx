@@ -4,22 +4,42 @@ import { fetchMovieAutofill, fetchMovieDetails } from '@/services/api';
 import { useSession } from '@/services/Auth';
 import { getCurrentUser, getProfile, getTopMovies } from '@/services/supabase';
 import useFetch from '@/services/useFetch';
+import { useWatchHistory } from '@/services/useWatchHistory';
+import { useFocusEffect } from '@react-navigation/native';
 import { Link } from 'expo-router';
-import { useEffect, useState } from 'react';
-import { Text, View, Image, TouchableOpacity, Dimensions, FlatList, ActivityIndicator, ScrollView } from 'react-native';
+import { use, useCallback, useEffect, useState } from 'react';
+import { Text, View, Image, TouchableOpacity, Dimensions, FlatList, ActivityIndicator, ScrollView, AppState } from 'react-native';
 
 
 
-export default function Index() {
+export default function Profile() {
   const { signOut, session } = useSession();
 
-  const [topMovies, setTopMovies] = useState<MovieDetails[]>([]);
+  const { movieHistory } = useWatchHistory()
   const { width } = Dimensions.get("window");
   const CARD_WIDTH = width * 0.6;
-  const { data: profile, error: profileError, loading: profileLoading } = useFetch(() => getProfile());
+  const { data: profile, error: profileError, loading: profileLoading, refetch: reloadProfile } = useFetch(() => getProfile());
   const [editProfileVisible, setEditProfileVisible] = useState<boolean>(false);
 
 
+  const { data: topMovies, refetch: refetchTopMovies } = useFetch(async () => {
+    const topMovieIDs = await getTopMovies();
+    const topMoviesData = await Promise.all(
+      topMovieIDs.map(async (movie) => {
+        const movieDetails = await fetchMovieDetails(movie.movie_id as string);
+        return movieDetails;
+      })
+    );
+    return topMoviesData;
+  });
+
+  useFocusEffect(
+    useCallback(() => {
+      if (session) {
+        refetchTopMovies();
+      }
+    }, [session, refetchTopMovies])
+  );
 
   function mapMovieDetailsToMovie(item: MovieDetails): Movie {
     return {
@@ -40,26 +60,7 @@ export default function Index() {
     };
   }
 
-  useEffect(() => {
-    const loadTopMovies = async () => {
-      const topMovieIDs = await getTopMovies();
-      // Fetch movie details for each top movie ID
-      const topMoviesData = await Promise.all(
-        topMovieIDs.map(async (movie) => {
-          const movieDetails = await fetchMovieDetails(movie.movie_id as string);
-          return movieDetails;
-        })
-      );
-      // Set the fetched top movies data to state
-      setTopMovies(topMoviesData);
-    }
-
-    if (session) {
-      loadTopMovies()
-    }
-  }, [session])
-
-  const topMoviesMapped: Movie[] = topMovies.map(mapMovieDetailsToMovie);
+  const topMoviesMapped: Movie[] = topMovies?.map(mapMovieDetailsToMovie) ?? [];
 
   return (
     <ScrollView
@@ -75,9 +76,9 @@ export default function Index() {
       {profileLoading ? (
         <ActivityIndicator size='large' color='#0000ff' className="mt-10 self-center" />
       ) : (
-        <View className='flex-col gap-y-6 pb-32'> 
+        <View className='flex-col gap-y-6 pb-32'>
           <View className='flex-row items-center justify-start gap-x-8 w-full'>
-            <Image className='w-20 h-20 rounded-full' source={{ uri: 'https://animals.sandiegozoo.org/sites/default/files/inline-images/animals-lizard-redheadedagamapair.jpg' }} />
+            <Image className='w-14 h-14 rounded-full ' source={{ uri: profile?.avatar_url }} />
             <Text className='text-white font-bold text-2xl w-full flex items-center justify-center'>{profile?.username}</Text>
           </View>
 
@@ -89,7 +90,7 @@ export default function Index() {
           {/* Description */}
           <Text className='text-white text-xl font-semibold'>Rating System </Text>
           <Text className='text-white pl-4'>
-            Lorem ipsum dolor sit amet consectetur, adipisicing elit. Sit laborum aliquid eum qui deleniti corrupti ipsam inventore temporibus nihil asperiores unde maxime odit, perferendis voluptate? Laudantium odio soluta ex ducimus.
+            {profile?.bio || "No rating system set."}
           </Text>
 
           {topMoviesMapped.length > 0 && (
@@ -129,7 +130,7 @@ export default function Index() {
           </TouchableOpacity>
         </View>
       )}
-      <EditProfileModal visible={editProfileVisible} setVisible={setEditProfileVisible} userName={profile?.username} bio={profile?.bio}></EditProfileModal>
+      <EditProfileModal visible={editProfileVisible} setVisible={setEditProfileVisible} userName={profile?.username} bio={profile?.bio} reloadProfile={reloadProfile} avatar_url={profile?.avatar_url}></EditProfileModal>
     </ScrollView>
   );
 

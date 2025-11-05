@@ -1,11 +1,11 @@
-import { View, Text, ScrollView, Touchable, TouchableOpacity, Pressable } from 'react-native'
+import { View, Text, ScrollView, Touchable, TouchableOpacity, Pressable, Alert } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Image } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import useFetch from '@/services/useFetch'
 import { fetchMovieDetails } from '@/services/api'
 import { icons } from '@/constants/icons'
-import { updateMovieStatus } from '@/services/supabase'
+import { updateFavoritedMovieSB, updateMovieStatus } from '@/services/supabase'
 import { useWatchHistory } from '@/services/useWatchHistory'
 import Dropdown, { OptionItem } from '@/components/DropDown'
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry'
@@ -32,20 +32,52 @@ const MovieInfo = ({ lable, value }: MovieInfoProps) => (
   </View>
 )
 
+const handleFavoritePress = (favorited: boolean, setFavorited: React.Dispatch<React.SetStateAction<boolean>>, movie_id: string, updateFavoritedMovie: (id: string, isFavorited: boolean) => void) => {
+
+  if (!favorited) {
+    // user favorites movie
+    try {
+      // update local movie history
+      updateFavoritedMovie(movie_id, true)
+      // update supabase movie db
+      updateFavoritedMovieSB(movie_id, true)
+    }
+    catch (error) {
+      Alert.alert("Error", "There was an error adding the movie to favorites.");
+    }
+  } else {
+    // user unfavorites movie
+    try {
+      // update local movie history
+      updateFavoritedMovie(movie_id, false)
+      // update supabase movie db
+      updateFavoritedMovieSB(movie_id, false)
+    }
+    catch (error) {
+      Alert.alert("Error", "There was an error adding the movie to favorites.");
+    }
+  }
+
+  setFavorited(!favorited);
+}
+
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
-  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating } = useWatchHistory()
+  const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating, isFavorited, updateFavoritedMovie } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
+  const [favorited, setFavorited] = useState<boolean>(false);
+
 
   useEffect(() => {
     if (!id || !movieHistory) return; // wait until both are defined
     const status = getStatus(id as string);
     setMovieStatus(status);
+    const favorite = isFavorited(id as string)
+    setFavorited(favorite)
   }, [id, movieHistory]);
 
   const handleStatusChange = async (item: OptionItem) => {
-
     // update local movieHistory
     if (item.value === movie_status.Remove) {
       removeMovie(id as string);
@@ -60,7 +92,6 @@ const MovieDetails = () => {
         updateMovieStatusContext(id as string, item.value as movie_status)
       }
     }
-
     // update movie history in supabase
     try {
       // Update Supabase
@@ -125,20 +156,44 @@ const MovieDetails = () => {
             <Text className='text-gray-400 text-sm'>{movie?.runtime}m</Text>
           </View>
           <View className='flex flex-row items-center justify-between w-full'>
-            <TouchableOpacity className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2' onPress={() => router.push({
-              pathname: '/movies/rating',
-              params: {
-                movie_id: id as string,
-                rating: getRating(id as string) ?? 1
-              },
+            <View className='flex-row justify-center items-center'>
+              <TouchableOpacity className='flex-row bg-gray-800 mt-2 p-2 rounded-md gap-x-2' onPress={() => router.push({
+                pathname: '/movies/rating',
+                params: {
+                  movie_id: id as string,
+                  rating: getRating(id as string) ?? 1
+                },
 
-            })} disabled={contextLoading || loading || getStatus(id as string) === null || getStatus(id as string) === movie_status.Bookmarked}>
-              <View className='flex-row items-center '>
-                <Image source={icons.star} className='size-4' />
-                <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
-              </View>
-              <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
-            </TouchableOpacity>
+              })} disabled={contextLoading || loading || getStatus(id as string) === null || getStatus(id as string) === movie_status.Bookmarked}>
+                <View className='flex-row items-center '>
+                  <Image source={icons.star} className='size-4' />
+                  <Text className='text-white font-bold text-sm'>{Math.round(movie?.vote_average ?? 0)}</Text>
+                </View>
+                <Text className='text-gray-400'>({movie?.vote_count} votes)</Text>
+              </TouchableOpacity>
+
+              {(() => {
+                const rating = getRating(id as string);
+                const shouldShowRating = (movieStatus === movie_status.Completed || movieStatus === movie_status.Dropped) && rating !== null;
+
+                return shouldShowRating && (
+                  <View className='flex-row items-center'>
+                    <Pressable className='p-4' onPress={() => {
+                      handleFavoritePress(favorited, setFavorited, id as string, updateFavoritedMovie);
+                    }}>
+                      {
+                        favorited ?
+                          <Ionicons name='star' color='white' size={20} />
+                          : <Ionicons name='star-outline' color='white' size={20} />
+                      }
+                    </Pressable>
+                  </View>
+                );
+              })()}
+
+
+            </View>
+
             {(() => {
               const rating = getRating(id as string);
               const shouldShowRating = (movieStatus === movie_status.Completed || movieStatus === movie_status.Dropped) && rating !== null;

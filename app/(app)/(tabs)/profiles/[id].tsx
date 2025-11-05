@@ -6,7 +6,7 @@ import { Text, View, Image, TouchableOpacity } from 'react-native';
 
 
 
-export default function Index() {
+export default function Profiles() {
   const { signOut, session } = useSession();
   const { id } = useLocalSearchParams();
 

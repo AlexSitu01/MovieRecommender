@@ -12,6 +12,8 @@ type WatchHistoryContextType = {
     getStatus: (movie_id: string) => movie_status | null
     updateMovieStatusContext: (moive_id: string, new_movie_status: movie_status) => void,
     updateRating: (movie_id: string, new_rating: number) => void,
+    updateFavoritedMovie: (movie_id: string, favorited: boolean) => void,
+    isFavorited: (movie_id: string) => boolean,
     loading: boolean
 }
 
@@ -19,6 +21,7 @@ type movieHistory = {
     movie_id: string
     movie_status: movie_status | null
     user_rating: number | null
+    favorited: boolean
 }
 
 export const WatchHistoryContext = createContext<WatchHistoryContextType | null>(null)
@@ -53,7 +56,9 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
                 setHistory(savedHistory.map((item) => ({
                     movie_id: item.movie_id,
                     movie_status: item.movie_status,
-                    user_rating: item.user_rating
+                    user_rating: item.user_rating,
+                    favorited: item.favorited
+
                 })))
             }
             setLoading(false)
@@ -61,13 +66,13 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
         loadHistory()
     }, [session])
 
-    const addMovie = (movie_id: string, movie_status: movie_status, user_rating: number | null = null) => {
+    const addMovie = (movie_id: string, movie_status: movie_status, user_rating: number | null = null, favorited=false) => {
 
         setHistory((prev) => {
             const exists = prev.some((item) => item.movie_id == movie_id);
 
             if (!exists) {
-                return [...prev, { movie_id, movie_status, user_rating }]
+                return [...prev, { movie_id, movie_status, user_rating, favorited }]
             }
             return prev
         })
@@ -118,8 +123,24 @@ export function WatchHistoryProvider({ children }: PropsWithChildren) {
         return record?.user_rating ?? null
     }
 
+    const updateFavoritedMovie = (movie_id: string, favorited: boolean) =>{
+        setHistory((prev) => {
+            return prev.map((movie) => {
+                if (movie.movie_id === movie_id) {
+                    return { ...movie, favorited:  favorited}; // assign new rating
+                }
+                return movie;
+            });
+        });
+    }
+
+    const isFavorited = (movie_id: string) => {
+        const record = movieHistory.find(e => e.movie_id == movie_id)
+        return record?.favorited ?? false
+    }
+
     return (
-        <WatchHistoryContext.Provider value={{ movieHistory, addMovie, removeMovie, loading, getStatus, updateMovieStatusContext, getRating, updateRating }}>
+        <WatchHistoryContext.Provider value={{ movieHistory, addMovie, removeMovie, loading, getStatus, updateMovieStatusContext, getRating, updateRating, updateFavoritedMovie, isFavorited }}>
             {children}
         </WatchHistoryContext.Provider>
     )

@@ -13,7 +13,7 @@ import { getCurrentUser } from '@/services/supabase'
 
 
 
-const TabIcon = ({ focused, icon, title, onPress }: any) => {
+const TabIcon = ({ focused, icon, title }: any) => {
     if (focused) {
         return (
             <ImageBackground
@@ -24,7 +24,7 @@ const TabIcon = ({ focused, icon, title, onPress }: any) => {
     }
     else {
         return (
-            <View className='flex flex-row size-full justify-center items-center rounded-full'>
+            <View className='flex flex-row w-full flex-1 min-w-32 min-h-24 justify-center items-center rounded-full overflow-hidden'>
                 <Ionicons name={icon} color='white' size={20}></Ionicons>
             </View>
         )
