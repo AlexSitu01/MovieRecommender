@@ -84,9 +84,9 @@ const Saved = () => {
     <View className='bg-[#020212] flex h-full w-full items-center pt-safe-offset-1'>
       {/* Shows text if no movies have been bookmarked */}
       {movies.length == 0 && !loadingMovies && <Text className='text-[#888888] mt-40'>No saved movies yet.</Text>}
-      {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3' />}
+      {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3'/>}
 
-      <ScrollView className="flex-1 px-5 w-full" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }} showsHorizontalScrollIndicator={false} >
+      <ScrollView className="flex-1 w-full px-3" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }} showsHorizontalScrollIndicator={false} >
         {
           bookmarkedMovies?.length > 0 && !loadingMovies &&
           (<View className={`flex ${completedMovies.length == 0 && droppedMovies.length == 0 && "pb-32"}`}>

@@ -17,6 +17,8 @@ export const TMBD_CONFIG = {
     }
 }
 
+
+
 export const fetchMovies = async ({ query }: { query: string }) => {
     const endpoint = query ? `${TMBD_CONFIG.BASE_URL}search/movie?query=${encodeURIComponent(query)}`
         : `${TMBD_CONFIG.BASE_URL}/discover/movie?sort_by=popularity.desc`;
@@ -44,19 +46,19 @@ export const fetchMovieDetails = async (movieId: string): Promise<MovieDetails> 
         }
         const data = await response.json();
         return data;
-        }   
-    catch (err) {
-            console.log(err);
-            throw err;
-        }
     }
+    catch (err) {
+        console.log(err);
+        throw err;
+    }
+}
 
-export const fetchTrendingMovies = async() => {
+export const fetchTrendingMovies = async () => {
     const response = await fetch(`${TMBD_CONFIG.BASE_URL}/trending/movie/week`, {
-        method : 'GET',
+        method: 'GET',
         headers: TMBD_CONFIG.headers
     })
-    if (!response){
+    if (!response) {
         throw new Error('Failed to fetch Trending Movies')
     }
     const data = await response.json()
@@ -64,31 +66,44 @@ export const fetchTrendingMovies = async() => {
 }
 
 export async function fetchMoviesList(movieIds: string[]) {
-  const results = await Promise.all(
-    movieIds.map(async (id) => {
-      const res = await fetchMovieDetails(id);
-      return res; 
-    })
-  );
+    const results = await Promise.all(
+        movieIds.map(async (id) => {
+            const res = await fetchMovieDetails(id);
+            return res;
+        })
+    );
 
-  // 'results' should be an array of movie objects
-  return results; // just in case
+    // 'results' should be an array of movie objects
+    return results; // just in case
 }
 
 // takes in a query string and the number of objects you want returned
 // 
-export async function fetchMovieAutofill(query: string, n: number){
+export async function fetchMovieAutofill(query: string, n: number) {
     const response = await fetch(`${TMBD_CONFIG.BASE_URL}search/movie?query=${query}`, {
         method: 'GET',
         headers: TMBD_CONFIG.headers
     })
-    if (!response.ok){
+    if (!response.ok) {
         throw new Error("Failed to get autofill movies")
     }
     const data = await response.json()
 
     // return results in descending order of populatirty
-    const res = data.results.sort((a: { popularity: number; },b: { popularity: number; }) => b.popularity - a.popularity)
+    const res = data.results.sort((a: { popularity: number; }, b: { popularity: number; }) => b.popularity - a.popularity)
     const end = Math.min(res.length, n)
     return res.slice(0, end)
+}
+
+export async function fetchRecs(movie_id: string): Promise<Number[] | null> {
+    const response = await fetch(`http://192.168.0.110:8000/recs/${movie_id}`, {
+        method: 'GET'
+    })
+    if (!response.ok) {
+        throw new Error("Failed to get movie recommendations")
+    }
+
+    const data = await response.json()
+
+    return data.recs
 }

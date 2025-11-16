@@ -95,8 +95,6 @@ export async function updateMovieStatus(movie_id: string, status: movie_status =
     else {
         // update movie status if the movie-user record exists
         const { data, error: updateError } = await supabase.from('watched_movies').update({ movie_status: status }).eq('user_id', user?.id).eq('movie_id', movie_id).select()
-        console.log("Supabase update data:", data);
-        console.log("Supabase update error:", updateError);
         if (updateError) {
             throw new Error("Error updating movie status")
         }

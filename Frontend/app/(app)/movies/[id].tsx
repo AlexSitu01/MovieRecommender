@@ -3,13 +3,14 @@ import React, { useEffect, useState } from 'react'
 import { Image } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
 import useFetch from '@/services/useFetch'
-import { fetchMovieDetails } from '@/services/api'
+import { fetchMovieDetails, fetchRecs } from '@/services/api'
 import { icons } from '@/constants/icons'
 import { updateFavoritedMovieSB, updateMovieStatus } from '@/services/supabase'
 import { useWatchHistory } from '@/services/useWatchHistory'
 import Dropdown, { OptionItem } from '@/components/DropDown'
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry'
 import { Ionicons } from '@expo/vector-icons'
+import { Button } from '@react-navigation/elements'
 
 
 
@@ -67,8 +68,11 @@ const MovieDetails = () => {
   const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating, isFavorited, updateFavoritedMovie } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
   const [favorited, setFavorited] = useState<boolean>(false);
+  const { data: recs, loading: loadingRecs, error: recsError } = useFetch(() => fetchRecs(id as string), true)
+  const [movieRecs, setMovieRecs] = useState<MovieDetails[]>([])
 
-
+  console.log("Recs: " + recs)
+  console.log("Errors: " + recsError)
   useEffect(() => {
     if (!id || !movieHistory) return; // wait until both are defined
     const status = getStatus(id as string);
@@ -76,6 +80,25 @@ const MovieDetails = () => {
     const favorite = isFavorited(id as string)
     setFavorited(favorite)
   }, [id, movieHistory]);
+
+
+  // Fix this later does not fetch
+useEffect(() => {
+  const findRecs = async () => {
+    if (!recsError && recs) {
+      console.log('Fetching movie details for:', recs)
+      
+      const newMovies = await Promise.all(
+        recs.map(async (movie) => {
+          const details = await fetchMovieDetails(movie as unknown as string);
+          return details;
+        })
+      );
+      setMovieRecs(newMovies)
+    }
+  }
+  findRecs()
+}, [recs, recsError])
 
   const handleStatusChange = async (item: OptionItem) => {
     // update local movieHistory
@@ -96,7 +119,6 @@ const MovieDetails = () => {
     try {
       // Update Supabase
       await updateMovieStatus(id as string, item.value as movie_status);
-      console.log("Updated movie status in Supabase:", item.value as movie_status);
     } catch (err) {
       console.error("Failed to update movie status:", err);
     }
@@ -226,6 +248,12 @@ const MovieDetails = () => {
         <Image source={icons.arrow} className='size-5 mr-1 mt-0.5 rotate-180' tintColor='#fff'></Image>
         <Text className='text-white font-semibold text-base'>Go Back</Text>
       </TouchableOpacity>
+
+
+      {/* Testing */}
+      <Pressable className='' onPressIn={() => console.log(movieRecs)}>
+        <View className='h-36 w-36 bg-white'></View>
+      </Pressable>
     </View>
   )
 }
