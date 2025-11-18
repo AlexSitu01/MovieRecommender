@@ -11,9 +11,8 @@ import { Redirect, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
 
-
 export default function Index() {
-
+  
   const router = useRouter();
   const {session} = useSession();
 

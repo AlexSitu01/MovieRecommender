@@ -2,6 +2,7 @@
 // const options = {method: 'GET', headers: {accept: 'application/json'}};
 
 import { get } from "react-native/Libraries/TurboModule/TurboModuleRegistry";
+import { useSession } from "./Auth";
 
 // fetch(url, options)
 //   .then(res => res.json())
@@ -16,7 +17,6 @@ export const TMBD_CONFIG = {
         Authorization: `Bearer ${process.env.EXPO_PUBLIC_MOVIE_API_KEY}`
     }
 }
-
 
 
 export const fetchMovies = async ({ query }: { query: string }) => {
@@ -42,6 +42,8 @@ export const fetchMovieDetails = async (movieId: string): Promise<MovieDetails> 
             headers: TMBD_CONFIG.headers
         });
         if (!response.ok) {
+            console.log("Movie " + movieId + " doesn't exist in the tmdb database.")
+            console.log(response.status + "-" + response.statusText)
             throw new Error('Failed to fetch movie details');
         }
         const data = await response.json();
@@ -95,10 +97,22 @@ export async function fetchMovieAutofill(query: string, n: number) {
     return res.slice(0, end)
 }
 
-export async function fetchRecs(movie_id: string): Promise<Number[] | null> {
+export async function fetchRecs(movie_id: string, token: string | null): Promise<Number[] | null> {
+
+    if (!token) {
+        console.log('No authentication token available')
+        throw new Error("Authentication required")
+    }
     const response = await fetch(`http://192.168.0.110:8000/recs/${movie_id}`, {
-        method: 'GET'
+        method: 'GET',
+        headers: {
+            Authorization: `Bearer ${token}`
+        }
     })
+    if (response.status == 401) {
+        console.log('Get request for recs timed out')
+        throw new Error("Request for movie recommendation timed out")
+    }
     if (!response.ok) {
         throw new Error("Failed to get movie recommendations")
     }

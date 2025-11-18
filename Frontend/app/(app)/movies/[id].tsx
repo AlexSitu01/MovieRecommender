@@ -1,4 +1,4 @@
-import { View, Text, ScrollView, Touchable, TouchableOpacity, Pressable, Alert } from 'react-native'
+import { View, Text, ScrollView, Touchable, TouchableOpacity, Pressable, Alert, ActivityIndicator, FlatList, Dimensions } from 'react-native'
 import React, { useEffect, useState } from 'react'
 import { Image } from 'react-native'
 import { router, useLocalSearchParams } from 'expo-router'
@@ -11,6 +11,9 @@ import Dropdown, { OptionItem } from '@/components/DropDown'
 import { get } from 'react-native/Libraries/TurboModule/TurboModuleRegistry'
 import { Ionicons } from '@expo/vector-icons'
 import { Button } from '@react-navigation/elements'
+import { mapMovieDetailsToMovie } from '../(tabs)/saved'
+import MovieCard from '@/components/MovieCard'
+import { useSession } from '@/services/Auth'
 
 
 
@@ -64,15 +67,18 @@ const handleFavoritePress = (favorited: boolean, setFavorited: React.Dispatch<Re
 
 const MovieDetails = () => {
   const { id } = useLocalSearchParams();
+  const {session} = useSession()
+  const token = session?.access_token || null
   const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
   const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating, isFavorited, updateFavoritedMovie } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
   const [favorited, setFavorited] = useState<boolean>(false);
-  const { data: recs, loading: loadingRecs, error: recsError } = useFetch(() => fetchRecs(id as string), true)
-  const [movieRecs, setMovieRecs] = useState<MovieDetails[]>([])
+  const { data: recs, loading: loadingRecs, error: recsError } = useFetch(() => fetchRecs(id as string, token), true)
+  const [movieRecs, setMovieRecs] = useState<Movie[]>([])
+  const { width } = Dimensions.get("window")
+  const CARD_WIDTH = width * 0.5
 
-  console.log("Recs: " + recs)
-  console.log("Errors: " + recsError)
+
   useEffect(() => {
     if (!id || !movieHistory) return; // wait until both are defined
     const status = getStatus(id as string);
@@ -82,23 +88,28 @@ const MovieDetails = () => {
   }, [id, movieHistory]);
 
 
-  // Fix this later does not fetch
-useEffect(() => {
-  const findRecs = async () => {
-    if (!recsError && recs) {
-      console.log('Fetching movie details for:', recs)
-      
-      const newMovies = await Promise.all(
-        recs.map(async (movie) => {
-          const details = await fetchMovieDetails(movie as unknown as string);
-          return details;
-        })
-      );
-      setMovieRecs(newMovies)
+  useEffect(() => {
+    const findRecs = async () => {
+      if (!recsError && recs) {
+        const moviePromises = recs.map(async (movie) => {
+          try {
+            const details = await fetchMovieDetails(movie as unknown as string);
+            return details;
+          } catch {
+            return null; // Return null for failed fetches
+          }
+        });
+        const newMovies = await Promise.all(moviePromises);
+        // Filter out null values and map to Movie type
+        setMovieRecs(
+          newMovies
+            .filter((movie) => movie !== null)
+            .map(mapMovieDetailsToMovie)
+        );
+      }
     }
-  }
-  findRecs()
-}, [recs, recsError])
+    findRecs()
+  }, [recs, recsError])
 
   const handleStatusChange = async (item: OptionItem) => {
     // update local movieHistory
@@ -123,8 +134,6 @@ useEffect(() => {
       console.error("Failed to update movie status:", err);
     }
   }
-
-
 
   return (
     <View className='flex-1 bg-[#020212]'>
@@ -240,8 +249,32 @@ useEffect(() => {
           </View>
 
           <MovieInfo lable='Production Companies' value={movie?.production_companies.map((c) => c.name).join(' - ') || 'N/A'} />
-        </View>
 
+          <View className='flex-col items-start justify-center mt-5 w-full'>
+            {!recsError ?
+              ((movieRecs.length > 0 || !loadingRecs)?
+                <View className='flex-col items-start justify-center gap-y-2 w-full' style={{ height: CARD_WIDTH * 1.4}}>
+                  <Text className='text-gray-400 text-sm font-bold self-start'> Movies we think you'll like</Text>
+                  <FlatList
+                    data={movieRecs}
+                    renderItem={({ item }) => <MovieCard {...item} cardWidth={CARD_WIDTH}></MovieCard>}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={false}
+                    ItemSeparatorComponent={() => <View style={{ width: 30 }} />}
+                  >
+                  </FlatList>
+                </View>
+                : <ActivityIndicator size="large" color="#0000ff" className='my-3 self-center' />
+              )
+              : (
+                <View>
+                  {/*Content based prediction here*/}
+                </View>
+              )
+            }
+          </View>
+
+        </View>
       </ScrollView>
 
       <TouchableOpacity onPress={router.back} className='absolute bottom-5 left-0 right-0 mx-5 bg-purple-400 py-3.5 flex flex-row items-center z-50 justify-center rounded-lg'>
@@ -251,9 +284,10 @@ useEffect(() => {
 
 
       {/* Testing */}
-      <Pressable className='' onPressIn={() => console.log(movieRecs)}>
+      {/* <Pressable className='' onPressIn={() => console.log(movieRecs)}>
         <View className='h-36 w-36 bg-white'></View>
-      </Pressable>
+      </Pressable> */}
+
     </View>
   )
 }

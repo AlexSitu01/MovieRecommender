@@ -1,7 +1,8 @@
 import { View, Text, AppState, StyleSheet, Alert } from 'react-native'
-import React, { Children, createContext, PropsWithChildren, use } from 'react'
+import React, { Children, createContext, PropsWithChildren, use, useEffect } from 'react'
 import { supabase } from '@/services/supabase'
 import { useStorageState } from '@/services/useStorageState'
+import { Session } from '@supabase/supabase-js'
 
 
 AppState.addEventListener('change', (state) => {
@@ -16,7 +17,7 @@ const AuthContext = createContext<{
     signIn: (email: string, password: string) => void;
     signUp: (email: string, password: string) => void;
     signOut: () => void;
-    session?: string | null;
+    session?: Session | null;
     isLoading: boolean;
 }>({
     signIn: () => null,
@@ -37,8 +38,46 @@ export function useSession() {
 export function SessionProvider({ children }: PropsWithChildren) {
 
     const [[isLoading, session], setSession] = useStorageState('session');
+    
 
     const sessionObj = session ? JSON.parse(session) : null;
+
+     // Add token refresh effect
+    useEffect(() => {
+        // Set up auth state listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(
+            async (event, session) => {
+                console.log('Auth event:', event);
+                
+                if (session) {
+                    // Update session whenever it changes (including refresh)
+                    setSession(JSON.stringify(session));
+                } else if (event === 'SIGNED_OUT') {
+                    setSession(null);
+                }
+            }
+        );
+
+        // Initial session check and refresh if needed
+        const refreshSession = async () => {
+            const { data: { session }, error } = await supabase.auth.getSession();
+            
+            if (error) {
+                console.error('Error getting session:', error);
+                return;
+            }
+
+            if (session) {
+                setSession(JSON.stringify(session));
+            }
+        };
+
+        refreshSession();
+
+        return () => {
+            subscription.unsubscribe();
+        };
+    }, []);
 
     const signIn = async (email: string, password: string) => {
         const { data, error } = await supabase.auth.signInWithPassword({ email, password });

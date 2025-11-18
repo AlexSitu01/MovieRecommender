@@ -1,24 +1,44 @@
 from typing import Union
 
-from fastapi import FastAPI,  HTTPException
+from fastapi import Depends, FastAPI,  HTTPException, Header
 from pydantic import BaseModel
 from dotenv import load_dotenv
 import pandas as pd
 from pathlib import Path
 from fastapi.middleware.cors import CORSMiddleware
-
 import os
+from dependecies.JWTBearer import JWTBearer
 from supabase import create_client, Client
-
-# load env
-load_dotenv()
-
-
-
+from jose import jwt, JWTError
 
 
 
 app = FastAPI()
+
+
+# load env
+load_dotenv()
+
+SUPABASE_URL: str = os.environ.get("SUPABASE_URL")
+SUPABASE_KEY: str = os.environ.get("SUPABASE_URL")
+supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+    
+async def get_current_user(authorization: str = Header(...)):
+    credentials_exception = HTTPException(
+        status_code=401,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        token = authorization.split(" ")[1]
+        # Verify the token using Supabase's public key or get_user()
+        # For simplicity, this example uses get_user()
+        user_response = supabase.auth.get_user(token)
+        if not user_response.user:
+            raise credentials_exception
+        return user_response.user
+    except (JWTError, IndexError):
+        raise credentials_exception
 
 app.add_middleware(
     CORSMiddleware,
@@ -32,20 +52,9 @@ class Item(BaseModel):
     price: float
     is_offer: Union[bool, None] = None
 
-class Movie(BaseModel):
-    movie_id: str
-
-class user_rated_movie(BaseModel):
-    movie_id: str
-    user_id: str
-    user_rating: Union[int, None] = None
-    movie_status: Union[str, None] = None
-    favorited: bool
-
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
-
 
 @app.get("/items/{item_id}")
 def read_item(item_id: int, q: Union[str, None] = None):
@@ -55,7 +64,7 @@ def read_item(item_id: int, q: Union[str, None] = None):
 def update_item(item_id: int, item: Item):
     return {"item_name": item.name, "item_id": item_id}
 
-@app.get("/recs/{movie_id}")
+@app.get("/recs/{movie_id}", dependencies=[Depends(JWTBearer())])
 def get_movie_recs(movie_id: int) : 
     
     BASE_DIR = Path(__file__).resolve().parent
@@ -74,6 +83,8 @@ def get_movie_recs(movie_id: int) :
         "movie_id": movie_id,
         "recs": recs.tolist()
     }
+
+
 
 if __name__ == "__main__":
     import uvicorn

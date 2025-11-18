@@ -5,6 +5,25 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Dimensions, FlatList, ScrollView, Text, View } from 'react-native'
 import { movie_status } from '../movies/[id]'
 
+export function mapMovieDetailsToMovie(item: MovieDetails): Movie {
+  return {
+    id: item.id,
+    title: item.title,
+    adult: item.adult,
+    backdrop_path: item.backdrop_path ?? "",
+    poster_path: item.poster_path ?? "",
+    release_date: item.release_date ?? "",
+    vote_average: item.vote_average,
+    vote_count: item.vote_count,
+    genre_ids: item.genres?.map(g => g.id) ?? [],
+    original_language: item.original_language,
+    original_title: item.original_title,
+    overview: item.overview ?? "",
+    popularity: item.popularity,
+    video: item.video,
+  };
+}
+
 const Saved = () => {
   const { movieHistory } = useWatchHistory()
   const [moviesDetails, setMoviesDetails] = useState<MovieDetails[]>([])
@@ -34,7 +53,7 @@ const Saved = () => {
               return fetchMovieDetails(movie.movie_id);
             })
           );
-          
+
           setMoviesDetails(prev => [...prev, ...newMovies]);
         } catch (err) {
           console.error("Failed to fetch new movies", err);
@@ -49,24 +68,6 @@ const Saved = () => {
     setLoadingMovies(false)
   }, [movieHistory]);
 
-  function mapMovieDetailsToMovie(item: MovieDetails): Movie {
-    return {
-      id: item.id,
-      title: item.title,
-      adult: item.adult,
-      backdrop_path: item.backdrop_path ?? "",
-      poster_path: item.poster_path ?? "",
-      release_date: item.release_date ?? "",
-      vote_average: item.vote_average,
-      vote_count: item.vote_count,
-      genre_ids: item.genres?.map(g => g.id) ?? [],
-      original_language: item.original_language,
-      original_title: item.original_title,
-      overview: item.overview ?? "",
-      popularity: item.popularity,
-      video: item.video,
-    };
-  }
 
   const movies: Movie[] = (moviesDetails ?? []).map(mapMovieDetailsToMovie);
   const bookmarkedIds = movieHistory
@@ -84,7 +85,7 @@ const Saved = () => {
     <View className='bg-[#020212] flex h-full w-full items-center pt-safe-offset-1'>
       {/* Shows text if no movies have been bookmarked */}
       {movies.length == 0 && !loadingMovies && <Text className='text-[#888888] mt-40'>No saved movies yet.</Text>}
-      {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3'/>}
+      {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3' />}
 
       <ScrollView className="flex-1 w-full px-3" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }} showsHorizontalScrollIndicator={false} >
         {
