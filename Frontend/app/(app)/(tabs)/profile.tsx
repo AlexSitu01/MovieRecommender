@@ -14,7 +14,9 @@ import { Text, View, Image, TouchableOpacity, Dimensions, FlatList, ActivityIndi
 
 export default function Profile() {
   const { signOut, session } = useSession();
+  const token = session?.access_token ?? null
 
+  const canFetch = !!token
   const { movieHistory } = useWatchHistory()
   const { width } = Dimensions.get("window");
   const CARD_WIDTH = width * 0.6;
@@ -26,7 +28,7 @@ export default function Profile() {
     const topMovieIDs = await getTopMovies();
     const topMoviesData = await Promise.all(
       topMovieIDs.map(async (movie) => {
-        const movieDetails = await fetchMovieDetails(movie.movie_id as string);
+        const movieDetails = await fetchMovieDetails(movie.movie_id as string, token);
         return movieDetails;
       })
     );

@@ -15,9 +15,11 @@ export default function Index() {
   
   const router = useRouter();
   const {session} = useSession();
+  const token = session?.access_token ?? null
+  const canFetch = !!token;
 
-  const { data: movies, loading: moviesLoading, error: moviesError } = useFetch(() => fetchMovies({ query: "" }));
-  const { data: trendingMovies, loading: trendingLoading, error: trendingError } = useFetch(() => fetchTrendingMovies())
+  const { data: movies, loading: moviesLoading, error: moviesError } = useFetch(() => fetchMovies({ query: "" }, token), canFetch);
+  const { data: trendingMovies, loading: trendingLoading, error: trendingError } = useFetch(() => fetchTrendingMovies(token), canFetch)
   const { width } = Dimensions.get("window");
   const CARD_WIDTH = width * 0.6;
   const [userNameModalVisible, setUserNameModalVisible] = useState<boolean>(false);

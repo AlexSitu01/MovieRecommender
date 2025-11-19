@@ -4,6 +4,7 @@ import { useWatchHistory } from '@/services/useWatchHistory'
 import { useEffect, useState } from 'react'
 import { ActivityIndicator, Dimensions, FlatList, ScrollView, Text, View } from 'react-native'
 import { movie_status } from '../movies/[id]'
+import { useSession } from '@/services/Auth'
 
 export function mapMovieDetailsToMovie(item: MovieDetails): Movie {
   return {
@@ -25,6 +26,8 @@ export function mapMovieDetailsToMovie(item: MovieDetails): Movie {
 }
 
 const Saved = () => {
+  const {session} = useSession()
+  const token = session?.access_token ?? null
   const { movieHistory } = useWatchHistory()
   const [moviesDetails, setMoviesDetails] = useState<MovieDetails[]>([])
   const [loadingMovies, setLoadingMovies] = useState<boolean>(false)
@@ -50,7 +53,7 @@ const Saved = () => {
         try {
           const newMovies = await Promise.all(
             newIds.map(movie => {
-              return fetchMovieDetails(movie.movie_id);
+              return fetchMovieDetails(movie.movie_id, token);
             })
           );
 
