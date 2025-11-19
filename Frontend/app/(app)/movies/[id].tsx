@@ -69,11 +69,13 @@ const MovieDetails = () => {
   const { id } = useLocalSearchParams();
   const {session} = useSession()
   const token = session?.access_token || null
-  const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string), true);
+
+  const canFetch = !!token && !!id;
+  const { data: movie, loading } = useFetch(() => fetchMovieDetails(id as string, token), canFetch);
   const { addMovie, removeMovie, updateMovieStatusContext, getStatus, movieHistory, loading: contextLoading, getRating, isFavorited, updateFavoritedMovie } = useWatchHistory()
   const [movieStatus, setMovieStatus] = useState<movie_status | null>(null)
   const [favorited, setFavorited] = useState<boolean>(false);
-  const { data: recs, loading: loadingRecs, error: recsError } = useFetch(() => fetchRecs(id as string, token), true)
+  const { data: recs, loading: loadingRecs, error: recsError } = useFetch(() => fetchRecs(id as string, token), canFetch)
   const [movieRecs, setMovieRecs] = useState<Movie[]>([])
   const { width } = Dimensions.get("window")
   const CARD_WIDTH = width * 0.5
@@ -93,7 +95,7 @@ const MovieDetails = () => {
       if (!recsError && recs) {
         const moviePromises = recs.map(async (movie) => {
           try {
-            const details = await fetchMovieDetails(movie as unknown as string);
+            const details = await fetchMovieDetails(movie as unknown as string, token);
             return details;
           } catch {
             return null; // Return null for failed fetches
@@ -243,7 +245,7 @@ const MovieDetails = () => {
 
           <MovieInfo lable='Generes' value={movie?.genres?.map((g) => g.name).join(' - ') || 'N/A'} />
 
-          <View className='flex flex-row justify-between w-1/2'>
+          <View className='flex flex-row justify-between w-1/2 gap-x-5'>
             <MovieInfo lable='Budget' value={movie && movie.budget != null ? `$${movie.budget / 1_000_000} millions` : 'N/A'} />
             <MovieInfo lable='Revenue' value={`$${(Math.round(movie?.revenue ?? 0) / 1_000_000).toFixed(2)} million`} />
           </View>
@@ -277,16 +279,17 @@ const MovieDetails = () => {
         </View>
       </ScrollView>
 
+     {/* <Pressable className='' onPressIn={() => console.log("Testing"+testTrending(token))}>
+        <View className='h-36 w-36 bg-white'></View>
+      </Pressable>  */}
+
       <TouchableOpacity onPress={router.back} className='absolute bottom-5 left-0 right-0 mx-5 bg-purple-400 py-3.5 flex flex-row items-center z-50 justify-center rounded-lg'>
         <Image source={icons.arrow} className='size-5 mr-1 mt-0.5 rotate-180' tintColor='#fff'></Image>
         <Text className='text-white font-semibold text-base'>Go Back</Text>
       </TouchableOpacity>
 
 
-      {/* Testing */}
-      {/* <Pressable className='' onPressIn={() => console.log(movieRecs)}>
-        <View className='h-36 w-36 bg-white'></View>
-      </Pressable> */}
+
 
     </View>
   )

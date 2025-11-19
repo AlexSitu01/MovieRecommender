@@ -1,4 +1,5 @@
 from typing import Union
+import requests
 
 from fastapi import Depends, FastAPI,  HTTPException, Header
 from pydantic import BaseModel
@@ -11,16 +12,17 @@ from dependecies.JWTBearer import JWTBearer
 from supabase import create_client, Client
 from jose import jwt, JWTError
 
-
-
 app = FastAPI()
-
 
 # load env
 load_dotenv()
 
 SUPABASE_URL: str = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY: str = os.environ.get("SUPABASE_URL")
+TMBD_URL: str = "https://api.themoviedb.org/3"
+TMDB_KEY: str = os.environ.get("TMDB_KEY")
+TMDB_HEADER = {"accept": 'application/json', "Authorization": f'Bearer {TMDB_KEY}'}
+
 supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
     
 async def get_current_user(authorization: str = Header(...)):
@@ -77,14 +79,38 @@ def get_movie_recs(movie_id: int) :
     except(KeyError):
         print(type(movie_id))
         raise HTTPException(status_code=404, detail='Item not found')
-    
-    print(recs)
     return {
         "movie_id": movie_id,
         "recs": recs.tolist()
     }
 
+@app.get("/trending", dependencies=[Depends(JWTBearer())])
+def get_treding_movies():
+    response = requests.get(url=f'{TMBD_URL}/trending/movie/week', headers= TMDB_HEADER)
+    response.raise_for_status()
+    return response.json()
 
+@app.get("/movie_details/{movie_id}", dependencies=[Depends(JWTBearer())])
+def get_movie_details(movie_id: str):
+    response = requests.get(url=f'{TMBD_URL}/movie/{movie_id}', params={'api_key': TMDB_KEY}, headers= TMDB_HEADER)
+    response.raise_for_status()
+    return response.json()
+
+@app.get("/search", dependencies=[Depends(JWTBearer())])
+def get_search_movie(query: str | None = None):
+    if query:
+        response = requests.get(url=f'{TMBD_URL}/search/movie', params= {'query':query}, headers= TMDB_HEADER)
+    else:
+        response = requests.get(url=f'{TMBD_URL}/discover/movie', params= {'sort_by': 'popularity.desc'}, headers=TMDB_HEADER)
+    response.raise_for_status()
+    return response.json()
+
+# example call /autofill?query=hello&n=5
+@app.get("/autofill", dependencies=[Depends(JWTBearer())])
+def get_autofill(query: str):
+    response = requests.get(f'{TMBD_URL}/search/movie', params={'query': query}, headers=TMDB_HEADER)
+    response.raise_for_status()
+    return response.json()
 
 if __name__ == "__main__":
     import uvicorn

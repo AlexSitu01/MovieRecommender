@@ -7,15 +7,18 @@ import { fetchMovieAutofill, fetchMovies } from '@/services/api'
 import useFetch from '@/services/useFetch'
 import { icons } from '@/constants/icons'
 import SearchBar from '@/components/SearchBar'
+import { useSession } from '@/services/Auth'
 
 const Search = () => {
   const router = useRouter();
+  const {session} = useSession()
+  const token = session?.access_token ?? null
 
   const [searchQuery, setSearchQuery] = useState("");
   const searchBarRef = useRef<TextInput>(null);
 
-  const { data: movies, loading, error, refetch: loadMovies, reset: resetMovies } = useFetch(() => fetchMovies({ query: searchQuery }), false);
-  const { data: autoCompleteMovies, error: autoCompleteError, refetch: loadAutoComplete, reset: resetAutoComplete } = useFetch(() => fetchMovieAutofill(searchQuery, 5), false)
+  const { data: movies, loading, error, refetch: loadMovies, reset: resetMovies } = useFetch(() => fetchMovies({ query: searchQuery }, token), false);
+  const { data: autoCompleteMovies, error: autoCompleteError, refetch: loadAutoComplete, reset: resetAutoComplete } = useFetch(() => fetchMovieAutofill(searchQuery, 5, token), false)
 
   // auto focus when tab switch to search
   useFocusEffect(
