@@ -45,3 +45,6 @@ app-example
 .env
 .venv
 Data
+key
+key.pub
+assets/

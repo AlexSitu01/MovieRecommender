@@ -4,6 +4,9 @@ import { router } from 'expo-router';
 import { useSession } from '@/services/Auth';
 import { isAuthApiError } from '@supabase/supabase-js';
 import { updateUsername } from '@/services/supabase';
+import { Image } from 'expo-image';
+import { images } from '@/constants/images';
+import { LinearGradient } from 'expo-linear-gradient';
 
 const Register = () => {
     const { signIn, session, signUp } = useSession();
@@ -11,7 +14,7 @@ const Register = () => {
     const [password, setPassword] = useState<string>('');
     const [confirmPassword, setConfirmPassword] = useState<string>('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
-    
+
 
     const handleSignUp = async () => {
 
@@ -51,6 +54,24 @@ const Register = () => {
 
     return (
         <View className='bg-[#020212]' style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+            <View className="absolute inset-0 z-0">
+                <Image
+                    source={images.bg2}
+                    style={{ width: '100%', height: '100%' }}
+                />
+
+                {/* Stronger, visible fade */}
+                <LinearGradient
+                    colors={['transparent', 'rgba(2,2,18,0.6)', '#020212']}
+                    locations={[0, 0.8, 1]}
+                    style={{
+                        position: 'absolute',
+                        width: '100%',
+                        height: '100%',
+                        zIndex: 10,
+                    }}
+                />
+            </View>
             <View className='flex flex-col justify-center items-center gap-y-4 w-full'>
                 <TextInput
                     className='text-white border-2 border-white rounded-lg w-2/3 p-4'
@@ -92,7 +113,7 @@ const Register = () => {
                 {errorMessage && <Text className='text-red-600'>{errorMessage}</Text>}
             </View>
 
-            
+
             <TouchableOpacity
                 className='my-20 absolute bottom-10'
                 onPress={async () => {

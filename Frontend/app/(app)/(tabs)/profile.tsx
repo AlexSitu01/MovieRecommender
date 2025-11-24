@@ -1,11 +1,13 @@
 import EditProfileModal from '@/components/EditProfileModal';
 import MovieCard from '@/components/MovieCard';
+import { images } from '@/constants/images';
 import { fetchMovieAutofill, fetchMovieDetails } from '@/services/api';
 import { useSession } from '@/services/Auth';
 import { getCurrentUser, getProfile, getTopMovies } from '@/services/supabase';
 import useFetch from '@/services/useFetch';
 import { useWatchHistory } from '@/services/useWatchHistory';
 import { useFocusEffect } from '@react-navigation/native';
+import { LinearGradient } from 'expo-linear-gradient';
 import { Link } from 'expo-router';
 import { use, useCallback, useEffect, useState } from 'react';
 import { Text, View, Image, TouchableOpacity, Dimensions, FlatList, ActivityIndicator, ScrollView, AppState } from 'react-native';
@@ -65,75 +67,105 @@ export default function Profile() {
   const topMoviesMapped: Movie[] = topMovies?.map(mapMovieDetailsToMovie) ?? [];
 
   return (
-    <ScrollView
-      className='flex-1 bg-[#020212] pt-safe-offset-8'
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={{
-        justifyContent: 'flex-start',
-        padding: 24,
-        width: '100%',
-      }}
-    >
-      {/* Profile Pic and Username*/}
-      {profileLoading ? (
-        <ActivityIndicator size='large' color='#0000ff' className="mt-10 self-center" />
-      ) : (
-        <View className='flex-col gap-y-6 pb-32'>
-          <View className='flex-row items-center justify-start gap-x-8 w-full'>
-            <Image className='w-14 h-14 rounded-full ' source={{ uri: profile?.avatar_url }} />
-            <Text className='text-white font-bold text-2xl w-full flex items-center justify-center'>{profile?.username}</Text>
+    <View className='flex-1 bg-[#020212]'>
+      <View className="absolute inset-0 z-0">
+        <Image
+          source={images.bg}
+          style={{ width: '100%', height: '100%' }}
+          resizeMode="cover"
+        />
+
+        {/* Stronger, visible fade */}
+        <LinearGradient
+          colors={['transparent', 'rgba(2,2,18,0.6)', '#020212']}
+          locations={[0, 0.1, 1]}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 10,
+          }}
+        />
+      </View>
+      <ScrollView
+        className='pt-safe-offset-10'
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={{
+          justifyContent: 'flex-start',
+          padding: 24,
+          width: '100%',
+        }}
+      >
+
+        {/* Profile Pic and Username*/}
+        {profileLoading ? (
+          <ActivityIndicator size='large' color='#0000ff' className="mt-10 self-center" />
+        ) : (
+          <View className='flex-col gap-y-6 pb-32'>
+            <View className='flex-row items-center justify-start gap-x-8 w-full'>
+              <Image className='w-14 h-14 rounded-full ' source={{ uri: profile?.avatar_url }} />
+              <Text className='text-white font-bold text-2xl w-full flex items-center justify-center'>{profile?.username}</Text>
+            </View>
+
+            {/* Edit Profile Button */}
+            <TouchableOpacity className='bg-gray-800 rounded-lg flex-col items-center p-2 w-32' onPress={() => setEditProfileVisible(true)}>
+              <Text className='text-gray-300 text-lg font-semibold'>Edit Profile</Text>
+            </TouchableOpacity>
+
+            {/* Description */}
+            {profile?.bio &&
+              (<View className='flex-col'>
+                <Text className='text-white text-xl font-semibold'>Rating System </Text>
+                <Text className='text-white pl-4'>
+                  {profile?.bio || "No rating system set."}
+                </Text>
+              </View>)
+            }
+
+
+            {topMoviesMapped.length > 0 && (
+              <View>
+                <Text className="text-lg text-white font-bold mt-5 mb-3">Top Movies</Text>
+                <FlatList
+                  data={topMoviesMapped}
+                  renderItem={({ item }) => (
+                    <MovieCard {...item} cardWidth={CARD_WIDTH} />
+                  )}
+                  keyExtractor={(item) => item.id.toString()}
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  snapToInterval={CARD_WIDTH + 27}
+                  decelerationRate="fast"
+                  contentContainerStyle={{
+                    paddingHorizontal: 16,
+                  }}
+                  ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
+                  className="mb-4 mt-3"
+                />
+              </View>
+            )}
+
+            {/* Sign out button */}
+
           </View>
+        )}
+        <EditProfileModal visible={editProfileVisible} setVisible={setEditProfileVisible} userName={profile?.username} bio={profile?.bio} reloadProfile={reloadProfile} avatar_url={profile?.avatar_url}></EditProfileModal>
 
-          {/* Edit Profile Button */}
-          <TouchableOpacity className='bg-gray-800 rounded-lg flex-col items-center p-2 w-32' onPress={() => setEditProfileVisible(true)}>
-            <Text className='text-gray-300 text-lg font-semibold'>Edit Profile</Text>
-          </TouchableOpacity>
+        <TouchableOpacity className='relative text-white bottom-3'
+          onPress={() => {
+            if (session) {
+              signOut();
+            } else {
+              throw new Error("Log out without logging in error.")
+            }
+          }}>
+          <View className='h-10 bg-blue-500 flex items-center justify-center rounded-xl w-full mt-20'>
+            <Text className='text-white text-md'>Sign Out</Text>
+          </View>
+        </TouchableOpacity>
+      </ScrollView>
 
-          {/* Description */}
-          <Text className='text-white text-xl font-semibold'>Rating System </Text>
-          <Text className='text-white pl-4'>
-            {profile?.bio || "No rating system set."}
-          </Text>
-
-          {topMoviesMapped.length > 0 && (
-            <View>
-              <Text className="text-lg text-white font-bold mt-5 mb-3">Top Movies</Text>
-              <FlatList
-                data={topMoviesMapped}
-                renderItem={({ item }) => (
-                  <MovieCard {...item} cardWidth={CARD_WIDTH} />
-                )}
-                keyExtractor={(item) => item.id.toString()}
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                snapToInterval={CARD_WIDTH + 27}
-                decelerationRate="fast"
-                contentContainerStyle={{
-                  paddingHorizontal: 16,
-                }}
-                ItemSeparatorComponent={() => <View style={{ width: 20 }} />}
-                className="mb-4 mt-3"
-              />
-            </View>
-          )}
-
-          {/* Sign out button */}
-          <TouchableOpacity className='flex-row w-full text-white'
-            onPress={() => {
-              if (session) {
-                signOut();
-              } else {
-                throw new Error("Log out without logging in error.")
-              }
-            }}>
-            <View className='h-10 bg-blue-500 flex items-center justify-center rounded-xl w-full mt-20'>
-              <Text className='text-white text-md'>Sign Out</Text>
-            </View>
-          </TouchableOpacity>
-        </View>
-      )}
-      <EditProfileModal visible={editProfileVisible} setVisible={setEditProfileVisible} userName={profile?.username} bio={profile?.bio} reloadProfile={reloadProfile} avatar_url={profile?.avatar_url}></EditProfileModal>
-    </ScrollView>
+    </View >
   );
 
 }

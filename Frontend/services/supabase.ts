@@ -162,17 +162,29 @@ export async function getHistory() {
     return data
 }
 
-export async function getTopMovies() {
-    const user = await getCurrentUser()
-    const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
-    if (error) {
-        throw new Error("There was an error getting the users top movies history DB", error)
-    }
-    const res = data.filter((movie) => {
-        return movie?.favorited
-    })
+export async function getTopMovies(userId: string | null = null) {
+    if (userId) {
+        const { data, error } = await supabase.from('watched_movies').select().eq('user_id', userId)
+        if (error) {
+            throw new Error("There was an error getting the users top movies history DB", error)
+        }
+        const res = data.filter((movie) => {
+            return movie?.favorited
+        })
 
-    return res
+        return res
+    }
+    else {
+        const user = await getCurrentUser()
+        const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
+        if (error) {
+            throw new Error("There was an error getting the users top movies history DB", error)
+        }
+        const res = data.filter((movie) => {
+            return movie?.favorited
+        })
+        return res
+    }
 }
 
 export async function updateUsername(username: string) {
@@ -184,15 +196,42 @@ export async function updateUsername(username: string) {
     return data
 }
 
-export async function getProfile() {
-    const user = await getCurrentUser()
-    const { data, error } = await supabase.from('profiles').select().eq('id', user?.id).single()
+export async function getProfile(user_id: string | null = null) {
 
-    if (error) {
-        throw new Error("There was an error getting the users profile", error)
+    if (!user_id) {
+        const user = await getCurrentUser()
+
+        if (!user?.id) {
+            throw new Error("No authenticated user found")
+        }
+
+        const { data, error } = await supabase
+            .from('profiles')
+            .select()
+            .eq('id', user.id)
+            .maybeSingle()
+
+        if (error) {
+            throw new Error(`There was an error getting the current user's profile: ${error.message}`)
+        }
+
+        return data
     }
-    return data
+    else {
+        const { data, error } = await supabase
+            .from('profiles')
+            .select()
+            .eq('id', user_id)
+            .maybeSingle()
+
+        if (error) {
+            throw new Error(`There was an error getting the user's profile: ${error.message}`)
+        }
+
+        return data
+    }
 }
+
 
 export async function updateProfile({ username, bio, avatar_url }: Profile) {
     const user = await getCurrentUser()
@@ -204,6 +243,15 @@ export async function updateProfile({ username, bio, avatar_url }: Profile) {
     return data
 }
 
+export async function searchForUsers(query: string) {
+
+    const { data, error } = await supabase.from('profiles').select().ilike('username', `%${query}%`).limit(5)
+    if (error) {
+        throw new Error("There was an error searching for users", error)
+    }
+    return data;
+
+}
 
 
 export const supabase = getSupabase();

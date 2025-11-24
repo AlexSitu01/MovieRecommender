@@ -3,6 +3,10 @@ import React, { useState, useEffect } from 'react'
 import { router } from 'expo-router';
 import { useSession } from '@/services/Auth';
 import { AuthError, isAuthApiError } from '@supabase/supabase-js';
+import { Image } from 'expo-image';
+import { LinearGradient } from 'expo-linear-gradient';
+import { images } from '@/constants/images';
+
 
 const SignIn = () => {
   const { signIn, session } = useSession();
@@ -38,7 +42,26 @@ const SignIn = () => {
 
   return (
     <View className='bg-[#020212]' style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View className="absolute inset-0 z-0">
+        <Image
+          source={images.bg2}
+          style={{ width: '100%', height: '100%' }}
+        />
+
+        {/* Stronger, visible fade */}
+        <LinearGradient
+          colors={['transparent', 'rgba(2,2,18,0.6)', '#020212']}
+          locations={[0, 0.8, 1]}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 10,
+          }}
+        />
+      </View>
       <View className='flex flex-col justify-center items-center gap-y-4 w-full'>
+
         <TextInput
           className='text-white border-2 border-white rounded-lg w-2/3 p-4'
           placeholder='Email'
@@ -78,7 +101,7 @@ const SignIn = () => {
           try {
             await signIn("situalex123@gmail.com", "123456");
           } catch (error) {
-            console.error("Quick sign-in error:", error);
+            alert("Quick sign-in error supabase may be down");
           }
         }}
       >

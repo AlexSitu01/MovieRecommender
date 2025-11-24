@@ -1,0 +1,10 @@
+services:
+  app:
+    image: alexsitu1/movie_rec
+    environment: 
+      - SUPABASE_KEY=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpmemt4YmJscGhjcXNpY3BtZWR3Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTkwMDgzNTgsImV4cCI6MjA3NDU4NDM1OH0._w7ojS6mmvDtq4OXDK89uI5O_mYgU2mxwf0lA5ybtFk
+      - SUPABASE_URL=https://zfzkxbblphcqsicpmedw.supabase.co
+      - JWT_KEY=MYB4YkF2v7PxWOtiCfw312LjEMZ5RXHcm546F+2JoYcr1z96Wqm3r+XGtuZcu764kl6sDxOhLmiYRqUG7O/5Pg==
+      - TMDB_KEY=eyJhbGciOiJIUzI1NiJ9.eyJhdWQiOiIwYTEyZjRmODEwZTZiZDY2ODBjNTM0NTNiMzNjOGFmZCIsIm5iZiI6MTc1ODgyOTE4My4zOTIsInN1YiI6IjY4ZDU5YTdmMTE2YjVkZjczMmM0N2ZmNiIsInNjb3BlcyI6WyJhcGlfcmVhZCJdLCJ2ZXJzaW9uIjoxfQ.iwokBRNbh2OJ8QKY2HTmmHqtLdYGPMBXBTa3S33NXvA
+    ports:
+      - "8000:8000"
