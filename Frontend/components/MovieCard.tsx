@@ -24,7 +24,7 @@ const MovieCard = ({ id, poster_path, title, vote_average, release_date, cardWid
                         <Text className='text-white text-xs font-bold uppercase'>{vote_average.toFixed(1)}</Text>
                     </View>
                     {   rating &&
-                        (<View className='flex-row'>
+                        (<View className='flex-row gap-x-1'>
                             <Ionicons name='film-outline' size={15} color={'white'}></Ionicons>
                             <Text className='text-white text-xs font-bold uppercase'>{rating}</Text>
                         </View>)

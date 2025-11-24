@@ -82,7 +82,7 @@ export default function Index() {
                     renderItem={({ item }) => (
                       <MovieCard {...item} cardWidth={CARD_WIDTH} />
                     )}
-                    keyExtractor={(item) => item.id.toString()}
+                    keyExtractor={(item) => (item.id + item.vote_average + 1000).toString()}
                     horizontal
                     showsHorizontalScrollIndicator={false}
                     snapToInterval={CARD_WIDTH + 27} // card width + separator spacing

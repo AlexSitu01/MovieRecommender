@@ -147,6 +147,12 @@ const _layout = () => {
                     headerShown: false,
                 }}
             />
+            <Tabs.Screen
+            name='bookmarks/[id]'
+            options={{
+                href:null,
+                headerShown:false
+            }}/>
 
         </Tabs>
     )

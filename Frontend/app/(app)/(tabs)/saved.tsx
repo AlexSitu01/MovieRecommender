@@ -123,7 +123,7 @@ const Saved = () => {
             <FlatList data={bookmarkedMovies}
 
               renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth} ></MovieCard>)}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => `bookmarked-${item.id}`}
               numColumns={3}
               columnWrapperStyle={{
                 justifyContent: 'flex-start',
@@ -145,7 +145,7 @@ const Saved = () => {
           (<View className={`flex ${droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={completedMovies}
               renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth} ></MovieCard>)}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => `completed-${item.id}`}
               numColumns={3}
               columnWrapperStyle={{
                 justifyContent: 'flex-start',
@@ -166,7 +166,7 @@ const Saved = () => {
           (<View className='flex pb-32'>
             <FlatList data={droppedMovies}
               renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth}></MovieCard>)}
-              keyExtractor={(item) => item.id.toString()}
+              keyExtractor={(item) => `dropped-${item.id}`}
               numColumns={3}
               columnWrapperStyle={{
                 justifyContent: 'flex-start',
