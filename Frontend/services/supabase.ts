@@ -152,14 +152,23 @@ export async function updateFavoritedMovieSB(movie_id: string, favorited: boolea
     }
 }
 
-export async function getHistory() {
-    const user = await getCurrentUser()
-    const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
-
-    if (error) {
-        throw new Error("There was an error getting the users history DB", error)
+export async function getHistory(userId: string | null = null) {
+    if (userId) {
+        const { data, error } = await supabase.from('watched_movies').select().eq('user_id', userId)
+        if (error) {
+            throw new Error("There was an error getting the users history DB", error)
+        }
+        return data
     }
-    return data
+    else {
+        const user = await getCurrentUser()
+        const { data, error } = await supabase.from('watched_movies').select().eq('user_id', user?.id)
+
+        if (error) {
+            throw new Error("There was an error getting the users history DB", error)
+        }
+        return data
+    }
 }
 
 export async function getTopMovies(userId: string | null = null) {

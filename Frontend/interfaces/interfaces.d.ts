@@ -24,6 +24,7 @@ interface TrendingMovie {
 }
 
 interface MovieDetails {
+  movie_status: any;
   adult: boolean;
   backdrop_path: string | null;
   belongs_to_collection: {

@@ -131,7 +131,7 @@ export default function Profile() {
                   renderItem={({ item }) => (
                     <MovieCard {...item} cardWidth={CARD_WIDTH} />
                   )}
-                  keyExtractor={(item) => item.id.toString()}
+                  keyExtractor={(item) => (item.id).toString()}
                   horizontal
                   showsHorizontalScrollIndicator={false}
                   snapToInterval={CARD_WIDTH + 27}
@@ -159,8 +159,8 @@ export default function Profile() {
               throw new Error("Log out without logging in error.")
             }
           }}>
-          <View className='h-10 bg-blue-500 flex items-center justify-center rounded-xl w-full mt-20'>
-            <Text className='text-white text-md'>Sign Out</Text>
+          <View className='h-10 bg-purple-400 flex items-center justify-center rounded-xl w-full mt-20'>
+            <Text className='text-white text-lg font-bold'>Sign Out</Text>
           </View>
         </TouchableOpacity>
       </ScrollView>
