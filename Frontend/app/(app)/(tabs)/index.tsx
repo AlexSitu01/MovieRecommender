@@ -10,11 +10,13 @@ import useFetch from "@/services/useFetch";
 import { Redirect, useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { ActivityIndicator, Dimensions, FlatList, Image, ScrollView, Text, View } from "react-native";
+import { LinearGradient } from "expo-linear-gradient"
+
 
 export default function Index() {
-  
+
   const router = useRouter();
-  const {session} = useSession();
+  const { session } = useSession();
   const token = session?.access_token ?? null
   const canFetch = !!token;
 
@@ -23,11 +25,11 @@ export default function Index() {
   const { width } = Dimensions.get("window");
   const CARD_WIDTH = width * 0.6;
   const [userNameModalVisible, setUserNameModalVisible] = useState<boolean>(false);
-  
+
   useEffect(() => {
     const checkUserName = async () => {
       if (session) {
-        const profile = await getProfile()
+        const profile = await getProfile();
         if (!profile?.username) {
           setUserNameModalVisible(true);
         }
@@ -35,12 +37,30 @@ export default function Index() {
     }
     checkUserName();
   }, [session]);
-  
+
 
   return (
     <View className="flex-1">
       <View className="flex-1 bg-[#020212]">
-        <Image source={images.bg} className="absolute w-full z-0" />
+        <View className="absolute inset-0 z-0">
+          <Image
+            source={images.bg}
+            style={{ width: '100%', height: '100%' }}
+          />
+
+          {/* Stronger, visible fade */}
+          <LinearGradient
+            colors={['transparent', 'rgba(2,2,18,0.6)', '#020212']}
+            locations={[0, 0.1, 1]}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              zIndex: 10,
+            }}
+          />
+        </View>
+
 
         <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 10, minHeight: '100%' }}>
           <Image source={icons.logo} className="w-12 h-10 mt-20 mb-5 mx-auto"></Image>
@@ -98,7 +118,7 @@ export default function Index() {
           )}
         </ScrollView>
       </View>
-      <SignUpModal visible = {userNameModalVisible} setVisible = {setUserNameModalVisible}/>
+      <SignUpModal visible={userNameModalVisible} setVisible={setUserNameModalVisible} />
     </View>
 
   );

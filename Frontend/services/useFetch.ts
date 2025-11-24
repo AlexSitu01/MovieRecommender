@@ -17,7 +17,7 @@ const useFetch = <T>(fetchFunction: () => Promise<T>, autoFetch = true) => {
         } finally {
             setLoading(false);
         }
-    }, [fetchFunction]); // <-- memoize based on fetchFunction
+    }, [fetchFunction]);
 
     const reset = useCallback(() => {
         setData(null);

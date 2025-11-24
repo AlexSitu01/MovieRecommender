@@ -5,6 +5,10 @@ import { useEffect, useState } from 'react'
 import { ActivityIndicator, Dimensions, FlatList, ScrollView, Text, View } from 'react-native'
 import { movie_status } from '../movies/[id]'
 import { useSession } from '@/services/Auth'
+import { Image } from 'expo-image'
+import { LinearGradient } from 'expo-linear-gradient'
+import { images } from '@/constants/images'
+
 
 export function mapMovieDetailsToMovie(item: MovieDetails): Movie {
   return {
@@ -26,9 +30,9 @@ export function mapMovieDetailsToMovie(item: MovieDetails): Movie {
 }
 
 const Saved = () => {
-  const {session} = useSession()
+  const { session } = useSession()
   const token = session?.access_token ?? null
-  const { movieHistory } = useWatchHistory()
+  const { movieHistory, getRating } = useWatchHistory()
   const [moviesDetails, setMoviesDetails] = useState<MovieDetails[]>([])
   const [loadingMovies, setLoadingMovies] = useState<boolean>(false)
 
@@ -37,6 +41,10 @@ const Saved = () => {
   const gap = 20;
   const numColumns = 3;
   const cardWidth = (screenWidth - horizontalPadding - (gap * (numColumns - 1))) / numColumns;
+
+  interface CompletedMovies  extends Movie {
+    rating: number | null;
+  }
 
   //rerender movie everytime 
   useEffect(() => {
@@ -79,13 +87,31 @@ const Saved = () => {
   const completedIds = movieHistory.filter(m => m.movie_status === movie_status.Completed).map(m => m.movie_id)
   const droppedIds = movieHistory.filter(m => m.movie_status === movie_status.Dropped).map(m => m.movie_id)
 
-  const bookmarkedMovies = movies.filter(movie => bookmarkedIds.includes(movie.id.toString()));
-  const completedMovies = movies.filter(movie => completedIds.includes(movie.id.toString()))
-  const droppedMovies = movies.filter(movie => droppedIds.includes(movie.id.toString()))
+  const bookmarkedMovies = movies.filter(movie => bookmarkedIds.includes(movie.id.toString())).sort((a, b) => a.title.localeCompare(b.title));
+  const completedMovies: CompletedMovies[] = movies.filter(movie => completedIds.includes(movie.id.toString())).map(movie => ({...movie, rating: getRating(movie.id.toString())})).sort((a, b) =>  (b.rating ?? -1) - (a.rating ?? -1) || a.title.localeCompare(b.title));;
+  const droppedMovies = movies.filter(movie => droppedIds.includes(movie.id.toString())).map(movie => ({...movie, rating: getRating(movie.id.toString())})).sort((a, b) => a.title.localeCompare(b.title));
 
 
   return (
     <View className='bg-[#020212] flex h-full w-full items-center pt-safe-offset-1'>
+      <View className="absolute inset-0 z-0">
+        <Image
+          source={images.bg}
+          style={{ width: '100%', height: '100%' }}
+        />
+
+        {/* Stronger, visible fade */}
+        <LinearGradient
+          colors={['transparent', 'rgba(2,2,18,0.6)', '#020212']}
+          locations={[0, 0.1, 1]}
+          style={{
+            position: 'absolute',
+            width: '100%',
+            height: '100%',
+            zIndex: 10,
+          }}
+        />
+      </View>
       {/* Shows text if no movies have been bookmarked */}
       {movies.length == 0 && !loadingMovies && <Text className='text-[#888888] mt-40'>No saved movies yet.</Text>}
       {loadingMovies && <ActivityIndicator size="large" color="#0000ff" className='my-3' />}
@@ -118,7 +144,7 @@ const Saved = () => {
           completedMovies?.length > 0 && !loadingMovies &&
           (<View className={`flex ${droppedMovies.length == 0 && "pb-32"}`}>
             <FlatList data={completedMovies}
-              renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth}></MovieCard>)}
+              renderItem={({ item }) => (<MovieCard {...item} cardWidth={cardWidth} ></MovieCard>)}
               keyExtractor={(item) => item.id.toString()}
               numColumns={3}
               columnWrapperStyle={{

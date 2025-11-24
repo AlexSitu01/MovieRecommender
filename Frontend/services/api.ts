@@ -3,7 +3,7 @@
 //   .then(json => console.log(json))
 //   .catch(err => console.error(err));
 
-const MOVIES_URL = 'http://192.168.0.110:8000'
+const MOVIES_URL = 'https://movie-api.alexsitu.cc'
 
 
 export const fetchMovies = async ({ query }: { query: string }, token: string | null) => {
@@ -131,3 +131,5 @@ export async function fetchRecs(movie_id: string, token: string | null): Promise
 
     return data.recs
 }
+
+
